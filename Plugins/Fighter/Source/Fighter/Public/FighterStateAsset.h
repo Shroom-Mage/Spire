@@ -15,24 +15,13 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
-	UFighterStateAsset() {
-		Transitions.Add(FighterCommand::ATTACK_NORMAL);
-		Transitions.Add(FighterCommand::ATTACK_SPECIAL);
-		Transitions.Add(FighterCommand::FORWARD);
-		Transitions.Add(FighterCommand::BACKWARD);
-		Transitions.Add(FighterCommand::DASH_FORWARD);
-		Transitions.Add(FighterCommand::DASH_BACKWARD);
-		Transitions.Add(FighterCommand::JUMP);
-		Transitions.Add(FighterCommand::CROUCH);
-		Transitions.Add(FighterCommand::DODGE);
-		Transitions.Add(FighterCommand::GROUND);
-		Transitions.Add(FighterCommand::END);
-	}
-
+public:
 	UPROPERTY(EditAnywhere)
 	float Duration;
 	UPROPERTY(EditAnywhere)
-	bool bRelativeVelocity;
+	bool bInterruptAnimation;
+	UPROPERTY(EditAnywhere)
+	bool bInheritVelocity;
 	FVector2D Shift;
 	UPROPERTY(EditAnywhere)
 	FVector2D VelocityInitial;
@@ -43,5 +32,25 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 	UPROPERTY(EditAnywhere)
 	FVector2D Deceleration;
 	UPROPERTY(EditAnywhere)
-	TMap<FighterCommand, UFighterStateAsset*> Transitions;
+	UFighterStateAsset* AttackNormal;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* AttackSpecial;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Forward;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Backward;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* DashForward;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* DashBackward;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Jump;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Crouch;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Dodge;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* Ground;
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* End;
 };
