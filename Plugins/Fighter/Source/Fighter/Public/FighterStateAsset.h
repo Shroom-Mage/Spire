@@ -4,8 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "FighterCommand.h"
 #include "FighterStateAsset.generated.h"
+
+USTRUCT()
+struct FFighterStateTransition
+{
+	GENERATED_BODY()
+
+	// The state to enter
+	UPROPERTY(EditAnywhere)
+	UFighterStateAsset* State;
+	// If bSplit is true, StateTime will not be reset upon entering this state.
+	UPROPERTY(EditAnywhere)
+	bool bSplit;
+	// If bInterruptAnimation is true, this state's animation will play instantly instead of blending.
+	UPROPERTY(EditAnywhere)
+	bool bInterruptAnimation;
+	// If bInheritVelocity is true, VelocityInitial will be added to Velocity instead of replacing it.
+	UPROPERTY(EditAnywhere)
+	bool bInheritVelocity;
+};
 
 /**
  * 
@@ -16,41 +34,44 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	// When Duration is reached (in seconds), the state will end.
 	UPROPERTY(EditAnywhere)
 	float Duration;
+	// When entering this state, Shift is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere)
-	bool bInterruptAnimation;
-	UPROPERTY(EditAnywhere)
-	bool bInheritVelocity;
 	FVector2D Shift;
+	// When entering this state, VelocityInitial will be added to or assigned to the actor's Velocity.
 	UPROPERTY(EditAnywhere)
 	FVector2D VelocityInitial;
+	// The actor will accelerate or decelerate to reach VelocityTarget.
 	UPROPERTY(EditAnywhere)
 	FVector2D VelocityTarget;
+	// If the actor's Velocity is less than this state's VelocityTarget, Acceleration is applied.
 	UPROPERTY(EditAnywhere)
 	FVector2D Acceleration;
+	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is applied.
 	UPROPERTY(EditAnywhere)
 	FVector2D Deceleration;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* AttackNormal;
+	FFighterStateTransition AttackNormal;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* AttackSpecial;
+	FFighterStateTransition AttackSpecial;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Forward;
+	FFighterStateTransition WalkForward;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Backward;
+	FFighterStateTransition WalkBackward;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* DashForward;
+	FFighterStateTransition DashForward;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* DashBackward;
+	FFighterStateTransition DashBackward;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Jump;
+	FFighterStateTransition Jump;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Crouch;
+	FFighterStateTransition Crouch;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Dodge;
+	FFighterStateTransition Dodge;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* Ground;
+	FFighterStateTransition Land;
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* End;
+	FFighterStateTransition End;
 };

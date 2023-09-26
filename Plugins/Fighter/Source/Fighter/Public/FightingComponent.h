@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "FighterStateAsset.h"
 #include "FightingComponent.generated.h"
 
 
@@ -16,15 +17,9 @@ public:
 	// Sets default values for this component's properties
 	UFightingComponent();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void MoveForward();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void MoveBackward();
-
 private:
 	// Called to enter a new state. Entering the current state will do nothing.
-	void EnterState(class UFighterStateAsset* State);
+	void EnterStateTransition(FFighterStateTransition Transition);
 
 protected:
 	// Called when the game starts
@@ -33,10 +28,40 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	UFUNCTION(BlueprintCallable)
+	void AttackNormal();
+
+	UFUNCTION(BlueprintCallable)
+	void AttackSpecial();
+
+	UFUNCTION(BlueprintCallable)
+	void WalkForward();
+
+	UFUNCTION(BlueprintCallable)
+	void WalkBackward();
+
+	UFUNCTION(BlueprintCallable)
+	void DashForward();
+
+	UFUNCTION(BlueprintCallable)
+	void DashBackward();
+
+	UFUNCTION(BlueprintCallable)
+	void Jump();
+
+	UFUNCTION(BlueprintCallable)
+	void Crouch();
+
+	UFUNCTION(BlueprintCallable)
+	void Dodge();
+
+	UFUNCTION(BlueprintCallable)
+	void Land();
 
 public:
 	UPROPERTY(EditAnywhere)
-	class UFighterStateAsset* CurrentState;
+	UFighterStateAsset* CurrentState;
 	UPROPERTY(EditAnywhere)
 	FVector2D Velocity = {0.0f, 0.0f};
 	UPROPERTY(VisibleAnywhere)
