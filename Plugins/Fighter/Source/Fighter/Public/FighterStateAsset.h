@@ -6,6 +6,15 @@
 #include "Engine/DataAsset.h"
 #include "FighterStateAsset.generated.h"
 
+
+UENUM()
+enum class VelocityType
+{
+	IGNORE = 0,
+	ADD,
+	REPLACE
+};
+
 USTRUCT()
 struct FFighterStateTransition
 {
@@ -13,16 +22,16 @@ struct FFighterStateTransition
 
 	// The state to enter
 	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* State;
+	UFighterStateAsset* State = nullptr;
+	// BlendTime is the amount of time in seconds to change from the previous animation to the new one.
+	UPROPERTY(EditAnywhere)
+	float BlendTime = 0.0f;
 	// If bSplit is true, StateTime will not be reset upon entering this state.
 	UPROPERTY(EditAnywhere)
-	bool bSplit;
-	// If bInterruptAnimation is true, this state's animation will play instantly instead of blending.
+	bool bSplit = false;
+	// InitialVelocity determines how to apply VelocityInitial to Velocity.
 	UPROPERTY(EditAnywhere)
-	bool bInterruptAnimation;
-	// If bInheritVelocity is true, VelocityInitial will be added to Velocity instead of replacing it.
-	UPROPERTY(EditAnywhere)
-	bool bInheritVelocity;
+	VelocityType InitialVelocity;
 };
 
 /**
@@ -40,34 +49,28 @@ public:
 	// When entering this state, Shift is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere)
 	FVector2D Shift;
-	// When entering this state, VelocityInitial will be added to or assigned to the actor's Velocity.
+	// When entering this state, VelocityInitial will be applied to the actor's Velocity.
 	UPROPERTY(EditAnywhere)
 	FVector2D VelocityInitial;
 	// The actor will accelerate or decelerate to reach VelocityTarget.
 	UPROPERTY(EditAnywhere)
 	FVector2D VelocityTarget;
-	// If the actor's Velocity is less than this state's VelocityTarget, Acceleration is applied.
+	// If the actor's Velocity is less than this state's VelocityTarget, Acceleration is added to Velocity.
 	UPROPERTY(EditAnywhere)
 	FVector2D Acceleration;
-	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is applied.
+	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is subtracted from Velocity.
 	UPROPERTY(EditAnywhere)
 	FVector2D Deceleration;
 	UPROPERTY(EditAnywhere)
-	FFighterStateTransition AttackNormal;
+	FFighterStateTransition Normal;
 	UPROPERTY(EditAnywhere)
-	FFighterStateTransition AttackSpecial;
+	FFighterStateTransition Special;
 	UPROPERTY(EditAnywhere)
-	FFighterStateTransition WalkForward;
+	FFighterStateTransition Forward;
 	UPROPERTY(EditAnywhere)
-	FFighterStateTransition WalkBackward;
-	UPROPERTY(EditAnywhere)
-	FFighterStateTransition DashForward;
-	UPROPERTY(EditAnywhere)
-	FFighterStateTransition DashBackward;
+	FFighterStateTransition Backward;
 	UPROPERTY(EditAnywhere)
 	FFighterStateTransition Jump;
-	UPROPERTY(EditAnywhere)
-	FFighterStateTransition Crouch;
 	UPROPERTY(EditAnywhere)
 	FFighterStateTransition Dodge;
 	UPROPERTY(EditAnywhere)

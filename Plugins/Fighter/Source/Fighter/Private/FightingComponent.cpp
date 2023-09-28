@@ -19,10 +19,16 @@ void UFightingComponent::EnterStateTransition(FFighterStateTransition Transition
 	CurrentState = Transition.State;
 
 	// Apply initial velocity
-	if (Transition.bInheritVelocity)
+	switch (Transition.InitialVelocity) {
+	case VelocityType::ADD:
 		Velocity += CurrentState->VelocityInitial;
-	else
+		break;
+	case VelocityType::REPLACE:
 		Velocity = CurrentState->VelocityInitial;
+		break;
+	default:
+		break;
+	}
 
 	// Reset time
 	if (!Transition.bSplit)
@@ -46,14 +52,23 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	StateTime += DeltaTime;
 
 	// Approach target velocity
-	if (Velocity.X < CurrentState->VelocityTarget.X - CurrentState->Acceleration.X) {
+	if (Velocity.X <= CurrentState->VelocityTarget.X - CurrentState->Acceleration.X * DeltaTime) {
 		Velocity.X += CurrentState->Acceleration.X * DeltaTime;
 	}
-	else if (Velocity.X > CurrentState->VelocityTarget.X + CurrentState->Acceleration.X) {
-		Velocity.X -= CurrentState->Acceleration.X * DeltaTime;
+	else if (Velocity.X >= CurrentState->VelocityTarget.X + CurrentState->Deceleration.X * DeltaTime) {
+		Velocity.X -= CurrentState->Deceleration.X * DeltaTime;
 	}
 	else {
 		Velocity.X = CurrentState->VelocityTarget.X;
+	}
+	if (Velocity.Y <= CurrentState->VelocityTarget.Y - CurrentState->Acceleration.Y * DeltaTime) {
+		Velocity.Y += CurrentState->Acceleration.Y * DeltaTime;
+	}
+	else if (Velocity.Y >= CurrentState->VelocityTarget.Y + CurrentState->Deceleration.Y * DeltaTime) {
+		Velocity.Y -= CurrentState->Deceleration.Y * DeltaTime;
+	}
+	else {
+		Velocity.Y = CurrentState->VelocityTarget.Y;
 	}
 
 	// Translate
@@ -72,48 +87,38 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		EnterStateTransition(CurrentState->Land);
 		return;
 	}
-
+	// Enter Forward state if attempting to move
+	if (Movement > 0.0f && CurrentState->Forward.State) {
+		EnterStateTransition(CurrentState->Forward);
+		return;
+	}
+	// Enter Backward state if attempting to move
+	if (Movement < 0.0f && CurrentState->Backward.State) {
+		EnterStateTransition(CurrentState->Backward);
+		return;
+	}
 	// Enter End state if time has reached duration
-	if (CurrentState->Duration && StateTime >= CurrentState->Duration && CurrentState->End.State) {
+	if (StateTime >= CurrentState->Duration && CurrentState->End.State) {
 		EnterStateTransition(CurrentState->End);
 		return;
 	}
 }
 
-void UFightingComponent::AttackNormal()
+void UFightingComponent::Normal()
 {
-	if (CurrentState && CurrentState->AttackNormal.State)
-		EnterStateTransition(CurrentState->AttackNormal);
+	if (CurrentState && CurrentState->Normal.State)
+		EnterStateTransition(CurrentState->Normal);
 }
 
-void UFightingComponent::AttackSpecial()
+void UFightingComponent::Special()
 {
-	if (CurrentState && CurrentState->AttackSpecial.State)
-		EnterStateTransition(CurrentState->AttackSpecial);
+	if (CurrentState && CurrentState->Special.State)
+		EnterStateTransition(CurrentState->Special);
 }
 
-void UFightingComponent::WalkForward()
+void UFightingComponent::Move(float Value)
 {
-	if (CurrentState && CurrentState->WalkForward.State)
-		EnterStateTransition(CurrentState->WalkForward);
-}
-
-void UFightingComponent::WalkBackward()
-{
-	if (CurrentState && CurrentState->WalkBackward.State)
-		EnterStateTransition(CurrentState->WalkBackward);
-}
-
-void UFightingComponent::DashForward()
-{
-	if (CurrentState && CurrentState->DashForward.State)
-		EnterStateTransition(CurrentState->DashForward);
-}
-
-void UFightingComponent::DashBackward()
-{
-	if (CurrentState && CurrentState->DashBackward.State)
-		EnterStateTransition(CurrentState->DashBackward);
+	Movement = Value;
 }
 
 void UFightingComponent::Jump()
@@ -122,20 +127,8 @@ void UFightingComponent::Jump()
 		EnterStateTransition(CurrentState->Jump);
 }
 
-void UFightingComponent::Crouch()
-{
-	if (CurrentState && CurrentState->Crouch.State)
-		EnterStateTransition(CurrentState->Crouch);
-}
-
-void UFightingComponent::Dodge()
+void UFightingComponent::Evade()
 {
 	if (CurrentState && CurrentState->Dodge.State)
 		EnterStateTransition(CurrentState->Dodge);
-}
-
-void UFightingComponent::Land()
-{
-	if (CurrentState && CurrentState->Land.State)
-		EnterStateTransition(CurrentState->Land);
 }

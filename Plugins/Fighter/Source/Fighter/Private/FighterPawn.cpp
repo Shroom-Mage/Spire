@@ -30,34 +30,19 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AFighterPawn::AttackNormal()
+void AFighterPawn::Normal()
 {
-	FightingComponent->AttackNormal();
+	FightingComponent->Normal();
 }
 
-void AFighterPawn::AttackSpecial()
+void AFighterPawn::Special()
 {
-	FightingComponent->AttackSpecial();
+	FightingComponent->Special();
 }
 
-void AFighterPawn::WalkForward()
+void AFighterPawn::Move(float Value)
 {
-	FightingComponent->WalkForward();
-}
-
-void AFighterPawn::WalkBackward()
-{
-	FightingComponent->WalkBackward();
-}
-
-void AFighterPawn::DashForward()
-{
-	FightingComponent->DashForward();
-}
-
-void AFighterPawn::DashBackward()
-{
-	FightingComponent->DashBackward();
+	FightingComponent->Move(Value);
 }
 
 void AFighterPawn::Jump()
@@ -65,17 +50,7 @@ void AFighterPawn::Jump()
 	FightingComponent->Jump();
 }
 
-void AFighterPawn::Crouch()
+void AFighterPawn::Evade()
 {
-	FightingComponent->Crouch();
-}
-
-void AFighterPawn::Dodge()
-{
-	FightingComponent->Dodge();
-}
-
-void AFighterPawn::Land()
-{
-	FightingComponent->Land();
+	FightingComponent->Evade();
 }

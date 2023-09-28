@@ -30,34 +30,19 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	UFUNCTION(BlueprintCallable)
-	void AttackNormal();
+	void Normal();
 
 	UFUNCTION(BlueprintCallable)
-	void AttackSpecial();
-
+	void Special();
+	
 	UFUNCTION(BlueprintCallable)
-	void WalkForward();
-
-	UFUNCTION(BlueprintCallable)
-	void WalkBackward();
-
-	UFUNCTION(BlueprintCallable)
-	void DashForward();
-
-	UFUNCTION(BlueprintCallable)
-	void DashBackward();
+	void Move(float Value);
 
 	UFUNCTION(BlueprintCallable)
 	void Jump();
 
 	UFUNCTION(BlueprintCallable)
-	void Crouch();
-
-	UFUNCTION(BlueprintCallable)
-	void Dodge();
-
-	UFUNCTION(BlueprintCallable)
-	void Land();
+	void Evade();
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -66,4 +51,7 @@ public:
 	FVector2D Velocity = {0.0f, 0.0f};
 	UPROPERTY(VisibleAnywhere)
 	float StateTime = 0.0f;
+
+private:
+	float Movement = 0.0f;
 };

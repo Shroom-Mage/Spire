@@ -27,35 +27,20 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void AttackNormal();
+	UFUNCTION(BlueprintCallable)
+	void Normal();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void AttackSpecial();
+	UFUNCTION(BlueprintCallable)
+	void Special();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void WalkForward();
+	UFUNCTION(BlueprintCallable)
+	void Move(float Value);
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void WalkBackward();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void DashForward();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void DashBackward();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
+	UFUNCTION(BlueprintCallable)
 	void Jump();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void Crouch();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void Dodge();
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void Land();
+	UFUNCTION(BlueprintCallable)
+	void Evade();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
