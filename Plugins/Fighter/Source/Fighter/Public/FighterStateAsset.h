@@ -23,9 +23,6 @@ struct FFighterStateTransition
 	// The state to enter
 	UPROPERTY(EditAnywhere)
 	UFighterStateAsset* State = nullptr;
-	// BlendTime is the amount of time in seconds to change from the previous animation to the new one.
-	UPROPERTY(EditAnywhere)
-	float BlendTime = 0.0f;
 	// If bSplit is true, StateTime will not be reset upon entering this state.
 	UPROPERTY(EditAnywhere)
 	bool bSplit = false;
@@ -43,36 +40,18 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	// The location of the body collider.
-	UPROPERTY(EditAnywhere, Category="Combat")
-	FVector2D BodyBoxLocation;
-	// The extent of the body collider.
-	UPROPERTY(EditAnywhere, Category="Combat")
-	FVector2D BodyBoxExtent;
-	// The location of the attack collider.
-	UPROPERTY(EditAnywhere, Category="Combat")
-	FVector2D AttackBoxLocation;
-	// The extent of the attack collider.
-	UPROPERTY(EditAnywhere, Category="Combat")
-	FVector2D AttackBoxExtent;
-	// The animation to play when entering the state.
-	UPROPERTY(EditAnywhere, Category="Animation")
-	UAnimSequence* Animation;
-	// Whether to repeat the animation while in the state.
-	UPROPERTY(EditAnywhere, Category="Animation")
-	bool bLoopAnimation;
 	// When Duration is reached (in seconds), the state will end.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Timing")
 	float Duration;
-	// When CancelTime is reached (in seconds), the state may be changed.
-	UPROPERTY(EditAnywhere)
-	float CancelTime = 0.0f;
 	// The state time at which the attack box becomes active.
-	UPROPERTY(EditAnywhere, Category="Combat")
+	UPROPERTY(EditAnywhere, Category="Timing")
 	float ActiveStartTime = 0.0f;
 	// The state time at which the attack box becomes inactive.
-	UPROPERTY(EditAnywhere, Category="Combat")
+	UPROPERTY(EditAnywhere, Category="Timing")
 	float ActiveEndTime = 0.0f;
+	// When CancelTime is reached (in seconds), the state may be changed.
+	UPROPERTY(EditAnywhere, Category="Timing")
+	float CancelTime = 0.0f;
 	// When entering this state, Shift is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Shift;
@@ -88,20 +67,25 @@ public:
 	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is subtracted from Velocity.
 	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Deceleration;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Normal;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Special;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Forward;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Backward;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Jump;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Dodge;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition Land;
-	UPROPERTY(EditAnywhere, Category="Transition")
-	FFighterStateTransition End;
+	// The location of the body collider.
+	UPROPERTY(EditAnywhere, Category="Collision")
+	FVector2D BodyBoxLocation;
+	// The extent of the body collider.
+	UPROPERTY(EditAnywhere, Category="Collision")
+	FVector2D BodyBoxExtent;
+	// The location of the attack collider.
+	UPROPERTY(EditAnywhere, Category="Collision")
+	FVector2D AttackBoxLocation;
+	// The extent of the attack collider.
+	UPROPERTY(EditAnywhere, Category="Collision")
+	FVector2D AttackBoxExtent;
+	// The animation to play when entering the state.
+	UPROPERTY(EditAnywhere, Category="Animation")
+	UAnimSequence* Animation;
+	// BlendTime is the amount of time in seconds to change from the previous animation to the new one.
+	UPROPERTY(EditAnywhere, Category="Animation")
+	float BlendTime = 0.0f;
+	// Whether to repeat the animation while in the state.
+	UPROPERTY(EditAnywhere, Category="Animation")
+	bool bLoopAnimation;
 };

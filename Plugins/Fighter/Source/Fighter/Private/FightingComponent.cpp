@@ -11,27 +11,30 @@ UFightingComponent::UFightingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UFightingComponent::EnterStateTransition(FFighterStateTransition Transition)
+void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
 {
-	if (!Transition.State || Transition.State == CurrentState)
+	if (State == CurrentState)
 		return;
 
-	CurrentState = Transition.State;
+	CurrentState = State;
+
+	// Play animation
+	OwnerSkeletalMesh->PlayAnimation(State->Animation, State->bLoopAnimation);
 
 	// Adjust body box
 	FVector BodyBoxLocation = FVector(CurrentState->BodyBoxLocation.X, 0.0f, CurrentState->BodyBoxLocation.Y);
 	FVector BodyBoxExtent = FVector(CurrentState->BodyBoxExtent.X, 0.0f, CurrentState->BodyBoxExtent.Y);
-	OwnerBodyBoxComponent->SetRelativeLocation(BodyBoxLocation);
-	OwnerBodyBoxComponent->SetBoxExtent(BodyBoxExtent);
+	OwnerBodyBox->SetRelativeLocation(BodyBoxLocation);
+	OwnerBodyBox->SetBoxExtent(BodyBoxExtent);
 
 	// Adjust attack box
 	FVector AttackBoxLocation = FVector(CurrentState->AttackBoxLocation.X, 0.0f, CurrentState->AttackBoxLocation.Y);
 	FVector AttackBoxExtent = FVector(CurrentState->AttackBoxExtent.X, 0.0f, CurrentState->AttackBoxExtent.Y);
-	OwnerAttackBoxComponent->SetRelativeLocation(AttackBoxLocation);
-	OwnerAttackBoxComponent->SetBoxExtent(AttackBoxExtent);
+	OwnerAttackBox->SetRelativeLocation(AttackBoxLocation);
+	OwnerAttackBox->SetBoxExtent(AttackBoxExtent);
 
 	// Apply initial velocity
-	switch (Transition.VelocityType) {
+	switch (VelocityType) {
 	case EVelocityType::ADD:
 		Velocity += CurrentState->VelocityInitial;
 		break;
@@ -43,7 +46,7 @@ void UFightingComponent::EnterStateTransition(FFighterStateTransition Transition
 	}
 
 	// Reset time
-	if (!Transition.bSplit)
+	if (!bSplit)
 		StateTime = 0.0f;
 }
 
@@ -61,16 +64,21 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	if (!CurrentState)
 		return;
 
+	// Update timers
 	StateTime += DeltaTime;
+	JumpInputTime -= DeltaTime;
+	EvadeInputTime -= DeltaTime;
+	NormalInputTime -= DeltaTime;
+	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
 	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime) {
 		bIsAttackActive = true;
-		OwnerBodyBoxComponent->ShapeColor.A = 255;
+		OwnerBodyBox->ShapeColor.A = 255;
 	}
 	else {
 		bIsAttackActive = false;
-		OwnerBodyBoxComponent->ShapeColor.A = 0;
+		OwnerBodyBox->ShapeColor.A = 0;
 	}
 
 	// Approach target velocity
@@ -104,63 +112,123 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 	Owner->SetActorLocation(Destination);
 
-	// Enter Land state if the ground is touched
-	if (bTouchedGround && CurrentState->Land.State) {
-		EnterStateTransition(CurrentState->Land);
+	// Enter Air state if attempting to jump while touching the ground
+	if ((CurrentState == StandingNeutral
+			|| CurrentState == StandingForward
+			|| CurrentState == StandingBackward)
+		&& bTouchedGround
+		&& JumpInputTime > 0.0f
+		&& AirNeutral)
+	{
+		JumpInputTime = 0.0f;
+		EnterStateTransition(AirNeutral, EVelocityType::ADD);
 		return;
 	}
-	// Enter Forward state if attempting to move
-	if (Movement > 0.0f && CurrentState->Forward.State) {
-		EnterStateTransition(CurrentState->Forward);
+	// Enter Landing state if the ground is touched from the air
+	if ((CurrentState == AirNeutral
+			|| CurrentState == AirForward
+			|| CurrentState == AirBackward)
+		&& bTouchedGround
+		&& StandingNeutral)
+	{
+		EnterStateTransition(StandingNeutral, EVelocityType::ADD);
 		return;
 	}
-	// Enter Backward state if attempting to move
-	if (Movement < 0.0f && CurrentState->Backward.State) {
-		EnterStateTransition(CurrentState->Backward);
+	// Enter StandingForward state if attempting to move while standing
+	if ((CurrentState == StandingNeutral
+			|| CurrentState == StandingForward
+			|| CurrentState == StandingBackward)
+		&& MovementInput > 0.0f
+		&& StandingForward)
+	{
+		EnterStateTransition(StandingForward, EVelocityType::IGNORE);
 		return;
 	}
-	// Enter End state if time has reached duration
-	if (StateTime >= CurrentState->Duration && CurrentState->End.State) {
-		EnterStateTransition(CurrentState->End);
+	// Enter StandingBackward state if attempting to move while standing
+	if ((CurrentState == StandingNeutral
+			|| CurrentState == StandingForward
+			|| CurrentState == StandingBackward)
+		&& MovementInput < 0.0f
+		&& StandingBackward)
+	{
+		EnterStateTransition(StandingBackward, EVelocityType::IGNORE);
+		return;
+	}
+	// Enter StandingNeutral state if not attempting to move while standing
+	if ((CurrentState == StandingNeutral
+			|| CurrentState == StandingForward
+			|| CurrentState == StandingBackward)
+		&& MovementInput == 0.0f
+		&& StandingNeutral)
+	{
+		EnterStateTransition(StandingNeutral, EVelocityType::IGNORE);
+		return;
+	}
+	// Enter AirForward state if attempting to move while Air
+	if ((CurrentState == AirNeutral
+			|| CurrentState == AirBackward)
+		&& MovementInput > 0.0f
+		&& AirForward)
+	{
+		EnterStateTransition(AirForward, EVelocityType::IGNORE);
+		return;
+	}
+	// Enter AirBackward state if attempting to move while Air
+	if ((CurrentState == AirNeutral
+			|| CurrentState == AirForward)
+		&& MovementInput < 0.0f
+		&& AirBackward)
+	{
+		EnterStateTransition(AirBackward, EVelocityType::IGNORE);
+		return;
+	}
+	// Enter AirNeutral state if not attempting to move while Air
+	if ((CurrentState == AirForward
+			|| CurrentState == AirBackward)
+		&& MovementInput == 0.0f
+		&& AirNeutral)
+	{
+		EnterStateTransition(AirNeutral, EVelocityType::IGNORE);
 		return;
 	}
 }
 
 void UFightingComponent::SetBodyBox(UBoxComponent* BodyBox)
 {
-	OwnerBodyBoxComponent = BodyBox;
+	OwnerBodyBox = BodyBox;
 }
 
 void UFightingComponent::SetAttackBox(UBoxComponent* AttackBox)
 {
-	OwnerAttackBoxComponent = AttackBox;
+	OwnerAttackBox = AttackBox;
+}
+
+void UFightingComponent::SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh)
+{
+	OwnerSkeletalMesh = SkeletalMesh;
 }
 
 void UFightingComponent::Normal()
 {
-	if (CurrentState && CurrentState->Normal.State)
-		EnterStateTransition(CurrentState->Normal);
+	NormalInputTime = 1.0f;
 }
 
 void UFightingComponent::Special()
 {
-	if (CurrentState && CurrentState->Special.State)
-		EnterStateTransition(CurrentState->Special);
+	SpecialInputTime = 1.0f;
 }
 
 void UFightingComponent::Move(float Value)
 {
-	Movement = Value;
+	MovementInput = Value;
 }
 
 void UFightingComponent::Jump()
 {
-	if (CurrentState && CurrentState->Jump.State)
-		EnterStateTransition(CurrentState->Jump);
+	JumpInputTime = 1.0f;
 }
 
 void UFightingComponent::Evade()
 {
-	if (CurrentState && CurrentState->Dodge.State)
-		EnterStateTransition(CurrentState->Dodge);
+	EvadeInputTime = 1.0f;
 }

@@ -20,7 +20,7 @@ public:
 
 private:
 	// Called to enter a new state. Entering the current state will do nothing.
-	void EnterStateTransition(FFighterStateTransition Transition);
+	void EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit = false);
 
 protected:
 	// Called when the game starts
@@ -33,6 +33,8 @@ public:
 	void SetBodyBox(UBoxComponent* BodyBox);
 
 	void SetAttackBox(UBoxComponent* AttackBox);
+
+	void SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh);
 
 	UFUNCTION(BlueprintCallable)
 	void Normal();
@@ -50,20 +52,44 @@ public:
 	void Evade();
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	UFighterStateAsset* CurrentState;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	FVector2D Velocity = {0.0f, 0.0f};
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
 	float StateTime = 0.0f;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
 	bool bIsAttackActive = false;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
 	bool bCanCancelState = false;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingBackward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* CrouchingNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirBackward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeBackward;
 
 private:
-	float Movement = 0.0f;
-	UBoxComponent* OwnerBodyBoxComponent;
-	UBoxComponent* OwnerAttackBoxComponent;
+	float MovementInput = 0.0f;
+	float JumpInputTime = 0.0f;
+	float EvadeInputTime = 0.0f;
+	float NormalInputTime = 0.0f;
+	float SpecialInputTime = 0.0f;
+	UBoxComponent* OwnerBodyBox;
+	UBoxComponent* OwnerAttackBox;
+	USkeletalMeshComponent* OwnerSkeletalMesh;
 };

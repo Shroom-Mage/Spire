@@ -16,6 +16,7 @@ AFighterPawn::AFighterPawn()
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SkeletalMesh->SetupAttachment(Base);
+	Fighting->SetSkeletalMesh(SkeletalMesh);
 
 	BodyBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyBox"));
 	BodyBox->SetupAttachment(Base);
