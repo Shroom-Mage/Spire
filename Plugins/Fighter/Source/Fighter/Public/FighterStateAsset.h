@@ -15,22 +15,6 @@ enum class EVelocityType
 	REPLACE
 };
 
-USTRUCT()
-struct FFighterStateTransition
-{
-	GENERATED_BODY()
-
-	// The state to enter
-	UPROPERTY(EditAnywhere)
-	UFighterStateAsset* State = nullptr;
-	// If bSplit is true, StateTime will not be reset upon entering this state.
-	UPROPERTY(EditAnywhere)
-	bool bSplit = false;
-	// VelocityType determines how to apply VelocityInitial to Velocity.
-	UPROPERTY(EditAnywhere)
-	EVelocityType VelocityType;
-};
-
 /**
  * 
  */
@@ -88,4 +72,10 @@ public:
 	// Whether to repeat the animation while in the state.
 	UPROPERTY(EditAnywhere, Category="Animation")
 	bool bLoopAnimation;
+	// When the attack button is pressed, the fighter will enter this state.
+	UPROPERTY(EditAnywhere, Category="Attack")
+	UFighterStateAsset* AttackNormal;
+	// When StateTime has reached the Duration, the fighter will enter this state.
+	UPROPERTY(EditAnywhere, Category = "Timing")
+	UFighterStateAsset* End;
 };

@@ -20,7 +20,7 @@ public:
 
 private:
 	// Called to enter a new state. Entering the current state will do nothing.
-	void EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit = false);
+	void EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
 
 protected:
 	// Called when the game starts
@@ -89,7 +89,8 @@ private:
 	float EvadeInputTime = 0.0f;
 	float NormalInputTime = 0.0f;
 	float SpecialInputTime = 0.0f;
-	UBoxComponent* OwnerBodyBox;
-	UBoxComponent* OwnerAttackBox;
-	USkeletalMeshComponent* OwnerSkeletalMesh;
+	UBoxComponent* OwnerBodyBox = nullptr;
+	UBoxComponent* OwnerAttackBox = nullptr;
+	USkeletalMeshComponent* OwnerSkeletalMesh = nullptr;
+	UAnimSequence* CurrentAnimation = nullptr;
 };

@@ -11,7 +11,7 @@ UFightingComponent::UFightingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
+void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
 {
 	if (State == CurrentState)
 		return;
@@ -19,7 +19,10 @@ void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVeloci
 	CurrentState = State;
 
 	// Play animation
-	OwnerSkeletalMesh->PlayAnimation(State->Animation, State->bLoopAnimation);
+	if (State->Animation != CurrentAnimation || bResetAnimation) {
+		CurrentAnimation = State->Animation;
+		OwnerSkeletalMesh->PlayAnimation(State->Animation, State->bLoopAnimation);
+	}
 
 	// Adjust body box
 	FVector BodyBoxLocation = FVector(CurrentState->BodyBoxLocation.X, 0.0f, CurrentState->BodyBoxLocation.Y);
@@ -112,6 +115,29 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 	Owner->SetActorLocation(Destination);
 
+	// Cancel state
+	if (CurrentState->CancelTime > 0.0f
+		&& StateTime > CurrentState->CancelTime
+		&& (MovementInput < 0.0f
+			|| MovementInput > 0.0f
+			|| JumpInputTime > 0.0f
+			|| EvadeInputTime > 0.0f
+			|| NormalInputTime > 0.0f
+			|| SpecialInputTime > 0.0f))
+	{
+		if (bTouchedGround)
+			CurrentState = StandingNeutral;
+		else
+			CurrentState = AirNeutral;
+	}
+
+	// Enter this state's normal attack if attempting to attack
+	if (NormalInputTime > 0.0f
+		&& CurrentState->AttackNormal)
+	{
+		NormalInputTime = 0.0f;
+		EnterStateTransition(CurrentState->AttackNormal, EVelocityType::ADD, true);
+	}
 	// Enter Air state if attempting to jump while touching the ground
 	if ((CurrentState == StandingNeutral
 			|| CurrentState == StandingForward
@@ -189,6 +215,14 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& AirNeutral)
 	{
 		EnterStateTransition(AirNeutral, EVelocityType::IGNORE);
+		return;
+	}
+	// Enter End state if Duration was reached
+	if (CurrentState->Duration > 0.0f
+		&& StateTime >= CurrentState->Duration
+		&& CurrentState->End)
+	{
+		EnterStateTransition(CurrentState->End, EVelocityType::IGNORE);
 		return;
 	}
 }
