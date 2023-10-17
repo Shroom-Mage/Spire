@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "FightingComponent.h"
 #include "FighterPawn.generated.h"
 
@@ -44,6 +47,23 @@ public:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UFightingComponent* FightingComponent;
+	USceneComponent* Base;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USkeletalMeshComponent* SkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UFightingComponent* Fighting;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UBoxComponent* BodyBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UBoxComponent* AttackBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UCameraComponent* Camera;
 };

@@ -8,7 +8,7 @@
 
 
 UENUM()
-enum class VelocityType
+enum class EVelocityType
 {
 	IGNORE = 0,
 	ADD,
@@ -29,9 +29,9 @@ struct FFighterStateTransition
 	// If bSplit is true, StateTime will not be reset upon entering this state.
 	UPROPERTY(EditAnywhere)
 	bool bSplit = false;
-	// InitialVelocity determines how to apply VelocityInitial to Velocity.
+	// VelocityType determines how to apply VelocityInitial to Velocity.
 	UPROPERTY(EditAnywhere)
-	VelocityType InitialVelocity;
+	EVelocityType VelocityType;
 };
 
 /**
@@ -43,38 +43,65 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	// The location of the body collider.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	FVector2D BodyBoxLocation;
+	// The extent of the body collider.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	FVector2D BodyBoxExtent;
+	// The location of the attack collider.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	FVector2D AttackBoxLocation;
+	// The extent of the attack collider.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	FVector2D AttackBoxExtent;
+	// The animation to play when entering the state.
+	UPROPERTY(EditAnywhere, Category="Animation")
+	UAnimSequence* Animation;
+	// Whether to repeat the animation while in the state.
+	UPROPERTY(EditAnywhere, Category="Animation")
+	bool bLoopAnimation;
 	// When Duration is reached (in seconds), the state will end.
 	UPROPERTY(EditAnywhere)
 	float Duration;
-	// When entering this state, Shift is distance to translate irrespective of Velocity.
+	// When CancelTime is reached (in seconds), the state may be changed.
 	UPROPERTY(EditAnywhere)
+	float CancelTime = 0.0f;
+	// The state time at which the attack box becomes active.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float ActiveStartTime = 0.0f;
+	// The state time at which the attack box becomes inactive.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float ActiveEndTime = 0.0f;
+	// When entering this state, Shift is distance to translate irrespective of Velocity.
+	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Shift;
 	// When entering this state, VelocityInitial will be applied to the actor's Velocity.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D VelocityInitial;
 	// The actor will accelerate or decelerate to reach VelocityTarget.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D VelocityTarget;
 	// If the actor's Velocity is less than this state's VelocityTarget, Acceleration is added to Velocity.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Acceleration;
 	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is subtracted from Velocity.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Deceleration;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Normal;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Special;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Forward;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Backward;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Jump;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Dodge;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition Land;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Transition")
 	FFighterStateTransition End;
 };

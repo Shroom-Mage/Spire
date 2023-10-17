@@ -18,12 +18,24 @@ void UFightingComponent::EnterStateTransition(FFighterStateTransition Transition
 
 	CurrentState = Transition.State;
 
+	// Adjust body box
+	FVector BodyBoxLocation = FVector(CurrentState->BodyBoxLocation.X, 0.0f, CurrentState->BodyBoxLocation.Y);
+	FVector BodyBoxExtent = FVector(CurrentState->BodyBoxExtent.X, 0.0f, CurrentState->BodyBoxExtent.Y);
+	OwnerBodyBoxComponent->SetRelativeLocation(BodyBoxLocation);
+	OwnerBodyBoxComponent->SetBoxExtent(BodyBoxExtent);
+
+	// Adjust attack box
+	FVector AttackBoxLocation = FVector(CurrentState->AttackBoxLocation.X, 0.0f, CurrentState->AttackBoxLocation.Y);
+	FVector AttackBoxExtent = FVector(CurrentState->AttackBoxExtent.X, 0.0f, CurrentState->AttackBoxExtent.Y);
+	OwnerAttackBoxComponent->SetRelativeLocation(AttackBoxLocation);
+	OwnerAttackBoxComponent->SetBoxExtent(AttackBoxExtent);
+
 	// Apply initial velocity
-	switch (Transition.InitialVelocity) {
-	case VelocityType::ADD:
+	switch (Transition.VelocityType) {
+	case EVelocityType::ADD:
 		Velocity += CurrentState->VelocityInitial;
 		break;
-	case VelocityType::REPLACE:
+	case EVelocityType::REPLACE:
 		Velocity = CurrentState->VelocityInitial;
 		break;
 	default:
@@ -50,6 +62,16 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		return;
 
 	StateTime += DeltaTime;
+
+	// Set attack activity
+	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime) {
+		bIsAttackActive = true;
+		OwnerBodyBoxComponent->ShapeColor.A = 255;
+	}
+	else {
+		bIsAttackActive = false;
+		OwnerBodyBoxComponent->ShapeColor.A = 0;
+	}
 
 	// Approach target velocity
 	if (Velocity.X <= CurrentState->VelocityTarget.X - CurrentState->Acceleration.X * DeltaTime) {
@@ -102,6 +124,16 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		EnterStateTransition(CurrentState->End);
 		return;
 	}
+}
+
+void UFightingComponent::SetBodyBox(UBoxComponent* BodyBox)
+{
+	OwnerBodyBoxComponent = BodyBox;
+}
+
+void UFightingComponent::SetAttackBox(UBoxComponent* AttackBox)
+{
+	OwnerAttackBoxComponent = AttackBox;
 }
 
 void UFightingComponent::Normal()

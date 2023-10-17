@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/BoxComponent.h"
 #include "FighterStateAsset.h"
 #include "FightingComponent.generated.h"
 
@@ -29,6 +30,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
+	void SetBodyBox(UBoxComponent* BodyBox);
+
+	void SetAttackBox(UBoxComponent* AttackBox);
+
 	UFUNCTION(BlueprintCallable)
 	void Normal();
 
@@ -51,7 +56,14 @@ public:
 	FVector2D Velocity = {0.0f, 0.0f};
 	UPROPERTY(VisibleAnywhere)
 	float StateTime = 0.0f;
+	UPROPERTY(VisibleAnywhere)
+	bool bIsAttackActive = false;
+	UPROPERTY(VisibleAnywhere)
+	bool bCanCancelState = false;
+
 
 private:
 	float Movement = 0.0f;
+	UBoxComponent* OwnerBodyBoxComponent;
+	UBoxComponent* OwnerAttackBoxComponent;
 };
