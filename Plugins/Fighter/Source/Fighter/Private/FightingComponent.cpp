@@ -242,16 +242,6 @@ void UFightingComponent::SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh)
 	OwnerSkeletalMesh = SkeletalMesh;
 }
 
-void UFightingComponent::Normal()
-{
-	NormalInputTime = 1.0f;
-}
-
-void UFightingComponent::Special()
-{
-	SpecialInputTime = 1.0f;
-}
-
 void UFightingComponent::Move(float Value)
 {
 	MovementInput = Value;
@@ -259,10 +249,20 @@ void UFightingComponent::Move(float Value)
 
 void UFightingComponent::Jump()
 {
-	JumpInputTime = 1.0f;
+	JumpInputTime = 0.25f;
 }
 
 void UFightingComponent::Evade()
 {
-	EvadeInputTime = 1.0f;
+	EvadeInputTime = 0.5f;
+}
+
+void UFightingComponent::Normal()
+{
+	NormalInputTime = 0.5f;
+}
+
+void UFightingComponent::Special()
+{
+	SpecialInputTime = 0.5f;
 }

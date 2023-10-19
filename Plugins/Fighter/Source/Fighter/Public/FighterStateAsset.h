@@ -76,6 +76,6 @@ public:
 	UPROPERTY(EditAnywhere, Category="Attack")
 	UFighterStateAsset* AttackNormal;
 	// When StateTime has reached the Duration, the fighter will enter this state.
-	UPROPERTY(EditAnywhere, Category = "Timing")
+	UPROPERTY(EditAnywhere, Category="Timing")
 	UFighterStateAsset* End;
 };

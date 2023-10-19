@@ -35,12 +35,6 @@ public:
 	void SetAttackBox(UBoxComponent* AttackBox);
 
 	void SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh);
-
-	UFUNCTION(BlueprintCallable)
-	void Normal();
-
-	UFUNCTION(BlueprintCallable)
-	void Special();
 	
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
@@ -50,6 +44,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Evade();
+
+	UFUNCTION(BlueprintCallable)
+	void Normal();
+
+	UFUNCTION(BlueprintCallable)
+	void Special();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
@@ -84,6 +84,9 @@ public:
 	UFighterStateAsset* EvadeBackward;
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UAnimSequence* CurrentAnimation = nullptr;
+
 	float MovementInput = 0.0f;
 	float JumpInputTime = 0.0f;
 	float EvadeInputTime = 0.0f;
@@ -92,5 +95,4 @@ private:
 	UBoxComponent* OwnerBodyBox = nullptr;
 	UBoxComponent* OwnerAttackBox = nullptr;
 	USkeletalMeshComponent* OwnerSkeletalMesh = nullptr;
-	UAnimSequence* CurrentAnimation = nullptr;
 };

@@ -4,10 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "FightingComponent.h"
 #include "FighterPawn.generated.h"
 
 UCLASS()
@@ -31,12 +27,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Normal();
-
-	UFUNCTION(BlueprintCallable)
-	void Special();
-
-	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
 
 	UFUNCTION(BlueprintCallable)
@@ -45,25 +35,32 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Evade();
 
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UFUNCTION(BlueprintCallable)
+	void Normal();
+
+	UFUNCTION(BlueprintCallable)
+	void Special();
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	USceneComponent* Base;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	USkeletalMeshComponent* SkeletalMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	class USkeletalMeshComponent* SkeletalMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UFightingComponent* Fighting;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UBoxComponent* BodyBox;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	class UBoxComponent* BodyBox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	UBoxComponent* AttackBox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	USpringArmComponent* SpringArm;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
+	class USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UCameraComponent* Camera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
+	class UCameraComponent* Camera;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UFightingComponent* Fighting;
 };

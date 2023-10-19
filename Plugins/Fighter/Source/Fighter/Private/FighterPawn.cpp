@@ -2,6 +2,10 @@
 
 
 #include "FighterPawn.h"
+#include "FightingComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -56,16 +60,14 @@ void AFighterPawn::Tick(float DeltaTime)
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
 
-void AFighterPawn::Normal()
-{
-	Fighting->Normal();
-}
-
-void AFighterPawn::Special()
-{
-	Fighting->Special();
+	//if (PlayerInputComponent) {
+	//	PlayerInputComponent->BindAxis("Move", this, &AFighterPawn::Move);
+	//	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AFighterPawn::Jump);
+	//	PlayerInputComponent->BindAction("Evade", EInputEvent::IE_Pressed, this, &AFighterPawn::Evade);
+	//	PlayerInputComponent->BindAction("Normal", EInputEvent::IE_Pressed, this, &AFighterPawn::Normal);
+	//	PlayerInputComponent->BindAction("Special", EInputEvent::IE_Pressed, this, &AFighterPawn::Special);
+	//}
 }
 
 void AFighterPawn::Move(float Value)
@@ -81,4 +83,14 @@ void AFighterPawn::Jump()
 void AFighterPawn::Evade()
 {
 	Fighting->Evade();
+}
+
+void AFighterPawn::Normal()
+{
+	Fighting->Normal();
+}
+
+void AFighterPawn::Special()
+{
+	Fighting->Special();
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "FighterPawn.h"
 #include "FighterPlayerController.generated.h"
 
 /**
@@ -14,4 +15,11 @@ class FIGHTER_API AFighterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupInputComponent() override;
 };
