@@ -26,6 +26,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void Move(const struct FInputActionValue& Value);
+
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
 
@@ -40,6 +42,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Special();
+
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void TurnAround();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
@@ -59,6 +64,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
 	class UCameraComponent* Camera;
+
+	bool bIsFacingRight = true;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

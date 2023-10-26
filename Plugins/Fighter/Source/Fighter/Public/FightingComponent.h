@@ -35,6 +35,14 @@ public:
 	void SetAttackBox(UBoxComponent* AttackBox);
 
 	void SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh);
+
+	bool GetIsAttackActive();
+
+	UFUNCTION()
+	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
@@ -52,16 +60,14 @@ public:
 	void Special();
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float Health = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float Resource = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	UFighterStateAsset* CurrentState;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	FVector2D Velocity = {0.0f, 0.0f};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
-	float StateTime = 0.0f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
-	bool bIsAttackActive = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status")
-	bool bCanCancelState = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* StandingNeutral;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
@@ -84,6 +90,14 @@ public:
 	UFighterStateAsset* EvadeBackward;
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	UFightingComponent* Target = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	float StateTime = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bIsAttackActive = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bCanCancelState = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
 	UAnimSequence* CurrentAnimation = nullptr;
 

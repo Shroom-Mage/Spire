@@ -2,6 +2,9 @@
 
 
 #include "FighterPlayerController.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
 
 void AFighterPlayerController::BeginPlay()
 {
@@ -16,6 +19,19 @@ void AFighterPlayerController::Tick(float DeltaTime)
 void AFighterPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+
+	//AFighterPawn* Fighter = Cast<AFighterPawn>(Owner);
+
+	//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent)) {
+	//	// Movement
+	//	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, Fighter, &AFighterPawn::Move);
+	//	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, Fighter, &AFighterPawn::Jump);
+	//	EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, Fighter, &AFighterPawn::Evade);
+
+	//	// Attacks
+	//	EnhancedInputComponent->BindAction(NormalAction, ETriggerEvent::Started, Fighter, &AFighterPawn::Normal);
+	//	EnhancedInputComponent->BindAction(SpecialAction, ETriggerEvent::Started, Fighter, &AFighterPawn::Special);
+	//}
 
 	//AFighterPawn* Fighter = Cast<AFighterPawn>(Owner);
 

@@ -77,11 +77,12 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// Set attack activity
 	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime) {
 		bIsAttackActive = true;
-		OwnerBodyBox->ShapeColor.A = 255;
+		OwnerAttackBox->ShapeColor.A = 255;
+		// Check for opponent and hit
 	}
 	else {
 		bIsAttackActive = false;
-		OwnerBodyBox->ShapeColor.A = 0;
+		OwnerAttackBox->ShapeColor.A = 0;
 	}
 
 	// Approach target velocity
@@ -107,7 +108,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// Translate
 	AActor* Owner = GetOwner();
 	FVector Location = Owner->GetActorLocation();
-	FVector Destination = Location + FVector(Velocity.X, 0.0f, Velocity.Y);
+	FVector Destination = Location + FVector(Velocity.X * Owner->GetActorForwardVector().X, 0.0f, Velocity.Y);
 	bool bTouchedGround = Destination.Z <= 0.0;
 	if (bTouchedGround) {
 		Destination.Z = 0.0;
@@ -240,6 +241,29 @@ void UFightingComponent::SetAttackBox(UBoxComponent* AttackBox)
 void UFightingComponent::SetSkeletalMesh(USkeletalMeshComponent* SkeletalMesh)
 {
 	OwnerSkeletalMesh = SkeletalMesh;
+}
+
+bool UFightingComponent::GetIsAttackActive()
+{
+	return bIsAttackActive;
+}
+
+void UFightingComponent::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->GetFName() == TEXT("BodyBox")) {
+		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
+		if (OtherFightingComp != this)
+			Target = OtherFightingComp;
+	}
+}
+
+void UFightingComponent::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherComp->GetFName() == TEXT("BodyBox")) {
+		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
+		if (OtherFightingComp == Target)
+			Target = nullptr;
+	}
 }
 
 void UFightingComponent::Move(float Value)

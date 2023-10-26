@@ -6,6 +6,9 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -34,11 +37,13 @@ AFighterPawn::AFighterPawn()
 	AttackBox->SetupAttachment(Base);
 	AttackBox->ShapeColor = FColor(255, 0, 0, 255);
 	Fighting->SetAttackBox(AttackBox);
+	AttackBox->OnComponentBeginOverlap.AddDynamic(Fighting, &UFightingComponent::OnAttackOverlapBegin);
+	AttackBox->OnComponentEndOverlap.AddDynamic(Fighting, &UFightingComponent::OnAttackOverlapEnd);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(Base);
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-	SpringArm->SetRelativeRotation(FRotator(-45.0, 0.0, 0.0));
+	SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -61,6 +66,17 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+	//	// Movement
+	//	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFighterPawn::Move);
+	//	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFighterPawn::Jump);
+	//	EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AFighterPawn::Evade);
+
+	//	// Attacks
+	//	EnhancedInputComponent->BindAction(NormalAction, ETriggerEvent::Started, this, &AFighterPawn::Normal);
+	//	EnhancedInputComponent->BindAction(SpecialAction, ETriggerEvent::Started, this, &AFighterPawn::Special);
+	//}
+
 	//if (PlayerInputComponent) {
 	//	PlayerInputComponent->BindAxis("Move", this, &AFighterPawn::Move);
 	//	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AFighterPawn::Jump);
@@ -70,9 +86,14 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	//}
 }
 
+void AFighterPawn::Move(const FInputActionValue& Value)
+{
+	Fighting->Move(Value.Get<float>());
+}
+
 void AFighterPawn::Move(float Value)
 {
-	Fighting->Move(Value);
+	Fighting->Move(bIsFacingRight ? Value : -Value);
 }
 
 void AFighterPawn::Jump()
@@ -93,4 +114,18 @@ void AFighterPawn::Normal()
 void AFighterPawn::Special()
 {
 	Fighting->Special();
+}
+
+void AFighterPawn::TurnAround()
+{
+	bIsFacingRight = !bIsFacingRight;
+
+	if (bIsFacingRight) {
+		SetActorRelativeRotation(FRotator(0.0, 0.0, 0.0));
+		SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
+	}
+	else {
+		SetActorRelativeRotation(FRotator(0.0, 180.0, 0.0));
+		SpringArm->SetRelativeRotation(FRotator(0.0, 90.0, 0.0));
+	}
 }
