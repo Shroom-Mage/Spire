@@ -79,6 +79,8 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		bIsAttackActive = true;
 		OwnerAttackBox->ShapeColor.A = 255;
 		// Check for opponent and hit
+		if (Target)
+			Target->ReceiveHit(1.0f);
 	}
 	else {
 		bIsAttackActive = false;
@@ -228,6 +230,24 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 }
 
+void UFightingComponent::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->GetFName() == TEXT("BodyBox")) {
+		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
+		if (OtherFightingComp != this)
+			Target = OtherFightingComp;
+	}
+}
+
+void UFightingComponent::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherComp->GetFName() == TEXT("BodyBox")) {
+		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
+		if (OtherFightingComp == Target)
+			Target = nullptr;
+	}
+}
+
 void UFightingComponent::SetBodyBox(UBoxComponent* BodyBox)
 {
 	OwnerBodyBox = BodyBox;
@@ -248,22 +268,10 @@ bool UFightingComponent::GetIsAttackActive()
 	return bIsAttackActive;
 }
 
-void UFightingComponent::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UFightingComponent::ReceiveHit(float Damage)
 {
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
-		if (OtherFightingComp != this)
-			Target = OtherFightingComp;
-	}
-}
-
-void UFightingComponent::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		UFightingComponent* OtherFightingComp = OtherActor->GetComponentByClass<UFightingComponent>();
-		if (OtherFightingComp == Target)
-			Target = nullptr;
-	}
+	Health -= Damage;
+	GEngine->AddOnScreenDebugMessage((int32)GetUniqueID(), 5.0f, FColor(0xFFFFFF00), TEXT("HIT!"));
 }
 
 void UFightingComponent::Move(float Value)
