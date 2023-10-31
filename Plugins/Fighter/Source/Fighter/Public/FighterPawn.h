@@ -6,6 +6,12 @@
 #include "GameFramework/Pawn.h"
 #include "FighterPawn.generated.h"
 
+class UBoxComponent;
+class USkeletalMeshComponent;
+class USpringArmComponent;
+class UCameraComponent;
+class UFightingComponent;
+
 UCLASS()
 class FIGHTER_API AFighterPawn : public APawn
 {
@@ -26,7 +32,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void Move(const struct FInputActionValue& Value);
+	//void Move(const struct FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
@@ -51,23 +57,23 @@ private:
 	USceneComponent* Base;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
-	class USkeletalMeshComponent* SkeletalMesh;
+	USkeletalMeshComponent* SkeletalMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
-	class UBoxComponent* BodyBox;
+	UBoxComponent* BodyBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	UBoxComponent* AttackBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
-	class USpringArmComponent* SpringArm;
+	USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
-	class UCameraComponent* Camera;
+	UCameraComponent* Camera;
 
 	bool bIsFacingRight = true;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	class UFightingComponent* Fighting;
+	UFightingComponent* Fighting;
 };

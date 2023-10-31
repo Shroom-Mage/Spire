@@ -2,6 +2,7 @@
 
 
 #include "FightingComponent.h"
+#include "FightingGameMode.h"
 
 // Sets default values for this component's properties
 UFightingComponent::UFightingComponent()
@@ -35,6 +36,7 @@ void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVeloci
 	FVector AttackBoxExtent = FVector(CurrentState->AttackBoxExtent.X, 0.0f, CurrentState->AttackBoxExtent.Y);
 	OwnerAttackBox->SetRelativeLocation(AttackBoxLocation);
 	OwnerAttackBox->SetBoxExtent(AttackBoxExtent);
+	bHasAttackHit = false;
 
 	// Apply initial velocity
 	switch (VelocityType) {
@@ -75,12 +77,14 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
-	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime) {
+	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime && !bHasAttackHit) {
 		bIsAttackActive = true;
 		OwnerAttackBox->ShapeColor.A = 255;
 		// Check for opponent and hit
-		if (Target)
-			Target->ReceiveHit(1.0f);
+		if (Target) {
+			bHasAttackHit = true;
+			Target->ReceiveHit(this, 1.0f);
+		}
 	}
 	else {
 		bIsAttackActive = false;
@@ -268,10 +272,17 @@ bool UFightingComponent::GetIsAttackActive()
 	return bIsAttackActive;
 }
 
-void UFightingComponent::ReceiveHit(float Damage)
+void UFightingComponent::ReceiveHit(UFightingComponent* Attacker, float Damage)
 {
 	Health -= Damage;
-	GEngine->AddOnScreenDebugMessage((int32)GetUniqueID(), 5.0f, FColor(0xFFFFFF00), TEXT("HIT!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor(0xFFFFFF00), TEXT("HIT!"));
+	// Increment the score
+	AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode) {
+		GameMode->AddPoint(Attacker);
+		GameMode->OnFighterHit.Broadcast(Attacker, this);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Score: %i"), GameMode->GetScore(Attacker)));
+	}
 }
 
 void UFightingComponent::Move(float Value)

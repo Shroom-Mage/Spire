@@ -8,7 +8,6 @@
 #include "FighterStateAsset.h"
 #include "FightingComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FIGHTER_API UFightingComponent : public UActorComponent
 {
@@ -45,7 +44,7 @@ public:
 	bool GetIsAttackActive();
 	
 	UFUNCTION(BlueprintCallable)
-	void ReceiveHit(float Damage);
+	void ReceiveHit(UFightingComponent* Attacker, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
@@ -101,6 +100,8 @@ private:
 	bool bIsAttackActive = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
 	bool bCanCancelState = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bHasAttackHit = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
 	UAnimSequence* CurrentAnimation = nullptr;
 

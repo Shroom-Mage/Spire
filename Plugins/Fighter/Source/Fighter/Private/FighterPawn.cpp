@@ -6,9 +6,9 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputActionValue.h"
+//#include "EnhancedInputComponent.h"
+//#include "EnhancedInputSubsystems.h"
+//#include "InputActionValue.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -86,10 +86,10 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	//}
 }
 
-void AFighterPawn::Move(const FInputActionValue& Value)
-{
-	Fighting->Move(Value.Get<float>());
-}
+//void AFighterPawn::Move(const FInputActionValue& Value)
+//{
+//	Fighting->Move(Value.Get<float>());
+//}
 
 void AFighterPawn::Move(float Value)
 {
