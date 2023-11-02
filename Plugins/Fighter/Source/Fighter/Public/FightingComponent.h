@@ -61,6 +61,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Special();
 
+	UFUNCTION(BlueprintCallable)
+	void TurnAround();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float Health = 1.0f;

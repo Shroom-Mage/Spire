@@ -32,6 +32,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable)
+	UFightingComponent* GetFightingComponent();
+
 	//void Move(const struct FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
@@ -51,6 +54,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void TurnAround();
+
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void FaceDirection(bool bFaceRight);
+
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	bool GetIsFacingRight();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))

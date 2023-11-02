@@ -277,11 +277,8 @@ void UFightingComponent::ReceiveHit(UFightingComponent* Attacker, float Damage)
 	Health -= Damage;
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor(0xFFFFFF00), TEXT("HIT!"));
 	// Increment the score
-	AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode) {
-		GameMode->AddPoint(Attacker);
-		GameMode->OnFighterHit.Broadcast(Attacker, this);
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Score: %i"), GameMode->GetScore(Attacker)));
+	if (AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode())) {
+		GameMode->OnAwardPoint.Broadcast(Attacker);
 	}
 }
 
@@ -308,4 +305,9 @@ void UFightingComponent::Normal()
 void UFightingComponent::Special()
 {
 	SpecialInputTime = 0.5f;
+}
+
+void UFightingComponent::TurnAround()
+{
+	Velocity.X *= -1.0f;
 }

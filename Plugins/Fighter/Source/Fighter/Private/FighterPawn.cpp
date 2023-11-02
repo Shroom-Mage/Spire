@@ -86,6 +86,11 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	//}
 }
 
+UFightingComponent* AFighterPawn::GetFightingComponent()
+{
+	return Fighting;
+}
+
 //void AFighterPawn::Move(const FInputActionValue& Value)
 //{
 //	Fighting->Move(Value.Get<float>());
@@ -120,6 +125,8 @@ void AFighterPawn::TurnAround()
 {
 	bIsFacingRight = !bIsFacingRight;
 
+	Fighting->TurnAround();
+
 	if (bIsFacingRight) {
 		SetActorRelativeRotation(FRotator(0.0, 0.0, 0.0));
 		SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
@@ -128,4 +135,17 @@ void AFighterPawn::TurnAround()
 		SetActorRelativeRotation(FRotator(0.0, 180.0, 0.0));
 		SpringArm->SetRelativeRotation(FRotator(0.0, 90.0, 0.0));
 	}
+}
+
+void AFighterPawn::FaceDirection(bool bFaceRight)
+{
+	if (bIsFacingRight == bFaceRight)
+		return;
+
+	TurnAround();
+}
+
+bool AFighterPawn::GetIsFacingRight()
+{
+	return bIsFacingRight;
 }
