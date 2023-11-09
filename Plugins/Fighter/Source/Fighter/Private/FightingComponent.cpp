@@ -12,7 +12,7 @@ UFightingComponent::UFightingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
+void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
 {
 	if (State == CurrentState)
 		return;
@@ -53,6 +53,11 @@ void UFightingComponent::EnterStateTransition(UFighterStateAsset* State, EVeloci
 	// Reset time
 	if (!bSplit)
 		StateTime = 0.0f;
+
+	// Gain resource
+	Resource = FMathf::Clamp(Resource + CurrentState->ResourceGain, 0.0f, ResourceMax);
+	if (CurrentState->ResourceGain > 0.0f)
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
 
 // Called when the game starts
@@ -143,7 +148,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& CurrentState->AttackNormal)
 	{
 		NormalInputTime = 0.0f;
-		EnterStateTransition(CurrentState->AttackNormal, EVelocityType::ADD, true);
+		EnterState(CurrentState->AttackNormal, EVelocityType::ADD, true);
 	}
 	// Enter Air state if attempting to jump while touching the ground
 	if ((CurrentState == StandingNeutral
@@ -154,7 +159,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& AirNeutral)
 	{
 		JumpInputTime = 0.0f;
-		EnterStateTransition(AirNeutral, EVelocityType::ADD);
+		EnterState(AirNeutral, EVelocityType::ADD);
 		return;
 	}
 	// Enter Landing state if the ground is touched from the air
@@ -164,7 +169,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& bTouchedGround
 		&& StandingNeutral)
 	{
-		EnterStateTransition(StandingNeutral, EVelocityType::ADD);
+		EnterState(StandingNeutral, EVelocityType::ADD);
 		return;
 	}
 	// Enter StandingForward state if attempting to move while standing
@@ -174,7 +179,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput > 0.0f
 		&& StandingForward)
 	{
-		EnterStateTransition(StandingForward, EVelocityType::IGNORE);
+		EnterState(StandingForward, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter StandingBackward state if attempting to move while standing
@@ -184,7 +189,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput < 0.0f
 		&& StandingBackward)
 	{
-		EnterStateTransition(StandingBackward, EVelocityType::IGNORE);
+		EnterState(StandingBackward, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter StandingNeutral state if not attempting to move while standing
@@ -194,7 +199,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput == 0.0f
 		&& StandingNeutral)
 	{
-		EnterStateTransition(StandingNeutral, EVelocityType::IGNORE);
+		EnterState(StandingNeutral, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter AirForward state if attempting to move while Air
@@ -203,7 +208,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput > 0.0f
 		&& AirForward)
 	{
-		EnterStateTransition(AirForward, EVelocityType::IGNORE);
+		EnterState(AirForward, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter AirBackward state if attempting to move while Air
@@ -212,7 +217,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput < 0.0f
 		&& AirBackward)
 	{
-		EnterStateTransition(AirBackward, EVelocityType::IGNORE);
+		EnterState(AirBackward, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter AirNeutral state if not attempting to move while Air
@@ -221,7 +226,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& MovementInput == 0.0f
 		&& AirNeutral)
 	{
-		EnterStateTransition(AirNeutral, EVelocityType::IGNORE);
+		EnterState(AirNeutral, EVelocityType::IGNORE);
 		return;
 	}
 	// Enter End state if Duration was reached
@@ -229,7 +234,7 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		&& StateTime >= CurrentState->Duration
 		&& CurrentState->End)
 	{
-		EnterStateTransition(CurrentState->End, EVelocityType::IGNORE);
+		EnterState(CurrentState->End, EVelocityType::IGNORE);
 		return;
 	}
 }
@@ -275,7 +280,7 @@ bool UFightingComponent::GetIsAttackActive()
 void UFightingComponent::ReceiveHit(UFightingComponent* Attacker, float Damage)
 {
 	Health -= Damage;
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor(0xFFFFFF00), TEXT("HIT!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT!"));
 	// Increment the score
 	if (AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode())) {
 		GameMode->OnAwardPoint.Broadcast(Attacker);
@@ -307,7 +312,35 @@ void UFightingComponent::Special()
 	SpecialInputTime = 0.5f;
 }
 
+void UFightingComponent::HardCancel()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
+
+	if (Resource < 1.0f)
+		return;
+
+	Resource--;
+	ResetToNeutral();
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
+}
+
 void UFightingComponent::TurnAround()
 {
 	Velocity.X *= -1.0f;
+}
+
+void UFightingComponent::ResetToNeutral()
+{
+	AActor* Owner = GetOwner();
+	FVector Location = Owner->GetActorLocation();
+	bool bTouchingGround = Location.Z <= 0.0;
+
+	Velocity = { 0.0f, 0.0f };
+	if (bTouchingGround) {
+		EnterState(StandingNeutral, EVelocityType::IGNORE, true);
+	}
+	else {
+		EnterState(AirNeutral, EVelocityType::IGNORE, true);
+	}
 }

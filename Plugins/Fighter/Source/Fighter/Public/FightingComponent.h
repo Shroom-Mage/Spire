@@ -19,7 +19,7 @@ public:
 
 private:
 	// Called to enter a new state. Entering the current state will do nothing.
-	void EnterStateTransition(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
+	void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
 
 protected:
 	// Called when the game starts
@@ -62,13 +62,21 @@ public:
 	void Special();
 
 	UFUNCTION(BlueprintCallable)
+	void HardCancel();
+
+	UFUNCTION(BlueprintCallable)
 	void TurnAround();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetToNeutral();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float Health = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float Resource = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float ResourceMax = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	UFighterStateAsset* CurrentState;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")

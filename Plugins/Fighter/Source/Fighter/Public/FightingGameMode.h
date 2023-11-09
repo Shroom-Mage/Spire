@@ -41,11 +41,17 @@ private:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Position")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
 	double StartingPosition0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Position")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
 	double StartingPosition1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	float ResourceMultiplier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	float ResourceMaxModifier = 0.0f;
 
 	UPROPERTY(BlueprintAssignable, Category="Scoring")
 	FAwardPointSignature OnAwardPoint;

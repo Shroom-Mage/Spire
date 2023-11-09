@@ -36,6 +36,9 @@ public:
 	// When CancelTime is reached (in seconds), the state may be changed.
 	UPROPERTY(EditAnywhere, Category="Timing")
 	float CancelTime = 0.0f;
+	// When the state is entered, the fighter gains resource equal to ResourceGain.
+	UPROPERTY(EditAnywhere, Category="Resource")
+	float ResourceGain = 0.0f;
 	// When entering this state, Shift is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere, Category="Movement")
 	FVector2D Shift;

@@ -52,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Special();
 
+	UFUNCTION(BlueprintCallable)
+	void HardCancel();
+
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void TurnAround();
 

@@ -57,8 +57,8 @@ void AFightingGameMode::AddPoint(AFighterPawn* Recipient)
 
 	ResetPositions();
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Score: %i"), GetScore(Recipient)));
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Round: %i"), Round));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Score: %i"), GetScore(Recipient)));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Round: %i"), Round));
 }
 
 void AFightingGameMode::AddPoint(UFightingComponent* Recipient)

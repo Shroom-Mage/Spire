@@ -121,6 +121,11 @@ void AFighterPawn::Special()
 	Fighting->Special();
 }
 
+void AFighterPawn::HardCancel()
+{
+	Fighting->HardCancel();
+}
+
 void AFighterPawn::TurnAround()
 {
 	bIsFacingRight = !bIsFacingRight;
