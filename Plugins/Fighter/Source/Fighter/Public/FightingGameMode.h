@@ -8,9 +8,6 @@
 
 class AFighterPawn;
 class UFightingComponent;
-	
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAwardPointSignature, UFightingComponent*, Recipient);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRoundStartSignature);
 
 /**
  * 
@@ -23,23 +20,33 @@ class FIGHTER_API AFightingGameMode : public AGameModeBase
 public:
 	AFightingGameMode();
 
-	UFUNCTION(BlueprintCallable, Category="Scoring")
-	int GetScore(AFighterPawn* FightingComp);
-	UFUNCTION(BlueprintCallable, Category="Scoring")
-	int GetRound();
+private:
+	void ResetPositions();
 
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	void AddPoint(AFighterPawn* Recipient);
-	UFUNCTION()
-	void AddPoint(UFightingComponent* Recipient);
-
-	void ResetPositions();
-
 public:
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BeginMatch();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BeginRound();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BeginPoint();
+
+	UFUNCTION()
+	void AddPoint(AFighterPawn* Recipient);
+	void AddPoint(UFightingComponent* Recipient);
+
+	UFUNCTION(BlueprintCallable, Category="Scoring")
+	int GetScore(AFighterPawn* FightingComp);
+
+	UFUNCTION(BlueprintCallable, Category="Scoring")
+	int GetRound();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
 	double StartingPosition0;
@@ -52,12 +59,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
 	float ResourceMaxModifier = 0.0f;
-
-	UPROPERTY(BlueprintAssignable, Category="Scoring")
-	FAwardPointSignature OnAwardPoint;
-
-	UPROPERTY(BlueprintAssignable, Category="Scoring")
-	FRoundStartSignature OnRoundStart;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scoring")
 	AFighterPawn* Fighter0;

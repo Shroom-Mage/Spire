@@ -283,7 +283,7 @@ void UFightingComponent::ReceiveHit(UFightingComponent* Attacker, float Damage)
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT!"));
 	// Increment the score
 	if (AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode())) {
-		GameMode->OnAwardPoint.Broadcast(Attacker);
+		GameMode->AddPoint(Attacker);
 	}
 }
 
