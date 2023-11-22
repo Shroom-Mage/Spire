@@ -34,5 +34,5 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AFightingGameMode* Fight;
+	AFightingGameMode* Match;
 };

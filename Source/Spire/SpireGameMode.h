@@ -16,9 +16,12 @@ class SPIRE_API ASpireGameMode : public AFightingGameMode
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana")
-	UArcanaAsset* ArcanaActive;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Arcana")
+	TArray<UArcanaAsset*> ArcanaDeck;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Arcana")
+	TArray<UArcanaAsset*> ActiveArcana;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana")
-	UArcanaAsset* ArcanaDeck;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Arcana")
+	TArray<UArcanaEffect*> ActiveEffects;
 };

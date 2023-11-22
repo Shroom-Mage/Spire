@@ -42,33 +42,33 @@ public:
 	void AddPoint(AFighterPawn* Recipient);
 	void AddPoint(UFightingComponent* Recipient);
 
-	UFUNCTION(BlueprintCallable, Category="Scoring")
+	UFUNCTION(BlueprintCallable, Category="Match")
 	int GetScore(AFighterPawn* FightingComp);
 
-	UFUNCTION(BlueprintCallable, Category="Scoring")
+	UFUNCTION(BlueprintCallable, Category="Match")
 	int GetRound();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	double StartingPosition0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	double StartingPosition1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMultiplier = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aspect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMaxModifier = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scoring")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
 	AFighterPawn* Fighter0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scoring")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
 	AFighterPawn* Fighter1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scoring")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
 	int Score0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Scoring")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
 	int Score1;
 };
