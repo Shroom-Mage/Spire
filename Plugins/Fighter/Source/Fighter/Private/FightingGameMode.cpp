@@ -29,8 +29,6 @@ void AFightingGameMode::AddPoint(AFighterPawn* Recipient)
 		BeginRound();
 	}
 
-	ResetPositions();
-
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Score: %i"), GetScore(Recipient)));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Round: %i"), GetRound()));
 
@@ -57,8 +55,6 @@ void AFightingGameMode::BeginPlay()
 
 	Fighter0 = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	Fighter1 = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 1));
-
-	ResetPositions();
 
 	BeginMatch();
 	BeginRound();
@@ -103,6 +99,8 @@ void AFightingGameMode::BeginRound()
 void AFightingGameMode::BeginPoint()
 {
 	OnBeginPoint();
+
+	ResetPositions();
 }
 
 int AFightingGameMode::GetScore(AFighterPawn* FightingComp)

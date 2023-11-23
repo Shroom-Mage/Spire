@@ -31,8 +31,8 @@ void ASpireGameMode::BeginMatch()
 	DrawCard();
 	DrawCard();
 
-	for (UArcanaEffect* Effect : ActiveEffects) {
-		Effect->BeginMatch();
+	for (int i = 0; i < GetRound() + 2; i++) {
+		ActiveEffects[i]->BeginPoint();
 	}
 }
 
@@ -40,8 +40,8 @@ void ASpireGameMode::BeginRound()
 {
 	Super::BeginRound();
 
-	for (UArcanaEffect* Effect : ActiveEffects) {
-		Effect->BeginRound();
+	for (int i = 0; i < GetRound() + 2; i++) {
+		ActiveEffects[i]->BeginRound();
 	}
 }
 
@@ -49,7 +49,7 @@ void ASpireGameMode::BeginPoint()
 {
 	Super::BeginPoint();
 
-	for (UArcanaEffect* Effect : ActiveEffects) {
-		Effect->BeginPoint();
+	for (int i = 0; i < GetRound() + 2; i++) {
+		ActiveEffects[i]->BeginPoint();
 	}
 }

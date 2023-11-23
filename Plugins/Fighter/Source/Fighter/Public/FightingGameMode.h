@@ -66,9 +66,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMultiplier = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
-	float ResourceMaxModifier = 0.0f;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
 	AFighterPawn* Fighter0;
 
