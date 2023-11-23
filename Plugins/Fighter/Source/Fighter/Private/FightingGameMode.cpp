@@ -90,6 +90,21 @@ void AFightingGameMode::Tick(float DeltaTime)
 	}
 }
 
+void AFightingGameMode::BeginMatch()
+{
+	OnBeginMatch();
+}
+
+void AFightingGameMode::BeginRound()
+{
+	OnBeginRound();
+}
+
+void AFightingGameMode::BeginPoint()
+{
+	OnBeginPoint();
+}
+
 int AFightingGameMode::GetScore(AFighterPawn* FightingComp)
 {
 	if (FightingComp == Fighter0)

@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "FightingGameMode.h"
-#include "ArcanaAsset.h"
 #include "SpireGameMode.generated.h"
+
+class UArcanaAsset;
+class UArcanaEffect;
 
 /**
  * 
@@ -15,6 +17,16 @@ class SPIRE_API ASpireGameMode : public AFightingGameMode
 {
 	GENERATED_BODY()
 	
+private:
+	void DrawCard();
+
+protected:
+	virtual void BeginMatch() override;
+
+	virtual void BeginRound() override;
+
+	virtual void BeginPoint() override;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Arcana")
 	TArray<UArcanaAsset*> ArcanaDeck;

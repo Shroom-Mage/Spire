@@ -4,17 +4,17 @@
 #include "ArcanaEffect.h"
 #include "FightingGameMode.h"
 
-void UArcanaEffect::StartMatch()
+void UArcanaEffect::BeginMatch()
 {
-	BeginMatch();
+	OnBeginMatch();
 }
 
-void UArcanaEffect::StartRound()
+void UArcanaEffect::BeginRound()
 {
-	BeginRound();
+	OnBeginRound();
 }
 
-void UArcanaEffect::StartPoint()
+void UArcanaEffect::BeginPoint()
 {
-	BeginPoint();
+	OnBeginPoint();
 }

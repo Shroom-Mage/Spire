@@ -17,20 +17,23 @@ class SPIRE_API UArcanaEffect : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginMatch();
 	UFUNCTION(BlueprintCallable)
-	void StartMatch();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginRound();
-	UFUNCTION(BlueprintCallable)
-	void StartRound();
+	virtual void BeginMatch();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginPoint();
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginMatch")
+	void OnBeginMatch();
+	
 	UFUNCTION(BlueprintCallable)
-	void StartPoint();
+	virtual void BeginRound();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginRound")
+	void OnBeginRound();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginPoint();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginPoint")
+	void OnBeginPoint();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

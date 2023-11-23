@@ -26,17 +26,26 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginMatch();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginMatch")
+	void OnBeginMatch();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginRound();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginRound")
+	void OnBeginRound();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginPoint();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginPoint")
+	void OnBeginPoint();
+
 public:
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginMatch();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginRound();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginPoint();
 
 	UFUNCTION()
 	void AddPoint(AFighterPawn* Recipient);
