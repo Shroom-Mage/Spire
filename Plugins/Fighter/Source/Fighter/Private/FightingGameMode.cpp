@@ -115,5 +115,5 @@ int AFightingGameMode::GetScore(AFighterPawn* FightingComp)
 
 int AFightingGameMode::GetRound()
 {
-	return ((Score0 + Score1) / 5) + 1;
+	return FMath::Clamp(((Score0 + Score1) / 5) + 1, 0, 3);
 }

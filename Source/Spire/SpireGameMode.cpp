@@ -31,7 +31,7 @@ void ASpireGameMode::BeginMatch()
 	DrawCard();
 	DrawCard();
 
-	for (int i = 0; i < GetRound() + 2; i++) {
+	for (int i = 0; i < GetRound() + 2 && i < ActiveEffects.Num(); i++) {
 		ActiveEffects[i]->BeginPoint();
 	}
 }
