@@ -40,7 +40,7 @@ void ASpireGameMode::BeginRound()
 {
 	Super::BeginRound();
 
-	for (int i = 0; i < GetRound() + 2; i++) {
+	for (int i = 0; i < GetRound() + 2 && i < ActiveEffects.Num(); i++) {
 		ActiveEffects[i]->BeginRound();
 	}
 }
@@ -49,7 +49,7 @@ void ASpireGameMode::BeginPoint()
 {
 	Super::BeginPoint();
 
-	for (int i = 0; i < GetRound() + 2; i++) {
+	for (int i = 0; i < GetRound() + 2 && i < ActiveEffects.Num(); i++) {
 		ActiveEffects[i]->BeginPoint();
 	}
 }
