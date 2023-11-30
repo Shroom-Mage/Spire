@@ -12,6 +12,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UFightingComponent;
 
+
 UCLASS()
 class FIGHTER_API AFighterPawn : public APawn
 {

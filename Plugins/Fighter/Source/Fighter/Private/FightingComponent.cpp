@@ -55,7 +55,7 @@ void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType Vel
 		StateTime = 0.0f;
 
 	// Gain resource
-	Resource = FMathf::Clamp(Resource + CurrentState->ResourceGain, 0.0f, ResourceMax);
+	Resource = FMathf::Clamp(Resource + CurrentState->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
 	if (CurrentState->ResourceGain > 0.0f)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
@@ -64,6 +64,8 @@ void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType Vel
 void UFightingComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame
@@ -282,8 +284,8 @@ void UFightingComponent::ReceiveHit(UFightingComponent* Attacker, float Damage)
 	Health -= Damage;
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT!"));
 	// Increment the score
-	if (AFightingGameMode* GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode())) {
-		GameMode->OnAwardPoint.Broadcast(Attacker);
+	if (GameMode) {
+		GameMode->AddPoint(Attacker);
 	}
 }
 

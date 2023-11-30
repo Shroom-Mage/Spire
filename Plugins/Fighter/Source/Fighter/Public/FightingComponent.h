@@ -124,4 +124,6 @@ private:
 	UBoxComponent* OwnerBodyBox = nullptr;
 	UBoxComponent* OwnerAttackBox = nullptr;
 	USkeletalMeshComponent* OwnerSkeletalMesh = nullptr;
+
+	class AFightingGameMode* GameMode;
 };
