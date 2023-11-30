@@ -29,6 +29,24 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginMatch();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginMatch")
+	void OnBeginMatch();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginRound();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginRound")
+	void OnBeginRound();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginPoint();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginPoint")
+	void OnBeginPoint();
+
 	UFUNCTION()
 	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -62,7 +80,7 @@ public:
 	void Special();
 
 	UFUNCTION(BlueprintCallable)
-	void HardCancel();
+	virtual UFighterStateAsset* HardCancel();
 
 	UFUNCTION(BlueprintCallable)
 	void TurnAround();

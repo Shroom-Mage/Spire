@@ -241,6 +241,21 @@ void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 }
 
+void UFightingComponent::BeginMatch()
+{
+	OnBeginMatch();
+}
+
+void UFightingComponent::BeginRound()
+{
+	OnBeginRound();
+}
+
+void UFightingComponent::BeginPoint()
+{
+	OnBeginPoint();
+}
+
 void UFightingComponent::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->GetFName() == TEXT("BodyBox")) {
@@ -314,17 +329,20 @@ void UFightingComponent::Special()
 	SpecialInputTime = 0.5f;
 }
 
-void UFightingComponent::HardCancel()
+UFighterStateAsset* UFightingComponent::HardCancel()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 
 	if (Resource < 1.0f)
-		return;
+		return nullptr;
 
 	Resource--;
+	UFighterStateAsset* CanceledState = CurrentState;
 	ResetToNeutral();
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
+
+	return CanceledState;
 }
 
 void UFightingComponent::TurnAround()

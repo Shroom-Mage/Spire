@@ -61,6 +61,27 @@ void AFighterPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AFighterPawn::BeginMatch()
+{
+	OnBeginMatch();
+
+	Fighting->BeginMatch();
+}
+
+void AFighterPawn::BeginRound()
+{
+	OnBeginRound();
+
+	Fighting->BeginRound();
+}
+
+void AFighterPawn::BeginPoint()
+{
+	OnBeginPoint();
+
+	Fighting->BeginPoint();
+}
+
 // Called to bind functionality to input
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -121,9 +142,11 @@ void AFighterPawn::Special()
 	Fighting->Special();
 }
 
-void AFighterPawn::HardCancel()
+UFighterStateAsset* AFighterPawn::HardCancel()
 {
-	Fighting->HardCancel();
+	UFighterStateAsset* CanceledState = Fighting->HardCancel();
+	OnHardCancel(CanceledState);
+	return CanceledState;
 }
 
 void AFighterPawn::TurnAround()

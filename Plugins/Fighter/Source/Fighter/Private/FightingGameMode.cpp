@@ -61,6 +61,32 @@ void AFightingGameMode::BeginPlay()
 	BeginPoint();
 }
 
+void AFightingGameMode::BeginMatch()
+{
+	OnBeginMatch();
+
+	Fighter0->BeginMatch();
+	Fighter1->BeginMatch();
+}
+
+void AFightingGameMode::BeginRound()
+{
+	OnBeginRound();
+
+	Fighter0->BeginRound();
+	Fighter1->BeginRound();
+}
+
+void AFightingGameMode::BeginPoint()
+{
+	OnBeginPoint();
+
+	ResetPositions();
+
+	Fighter0->BeginPoint();
+	Fighter1->BeginPoint();
+}
+
 void AFightingGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -84,23 +110,6 @@ void AFightingGameMode::Tick(float DeltaTime)
 				Fighter0->FaceDirection(false);
 		}
 	}
-}
-
-void AFightingGameMode::BeginMatch()
-{
-	OnBeginMatch();
-}
-
-void AFightingGameMode::BeginRound()
-{
-	OnBeginRound();
-}
-
-void AFightingGameMode::BeginPoint()
-{
-	OnBeginPoint();
-
-	ResetPositions();
 }
 
 int AFightingGameMode::GetScore(AFighterPawn* FightingComp)

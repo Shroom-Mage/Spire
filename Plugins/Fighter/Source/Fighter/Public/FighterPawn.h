@@ -11,7 +11,7 @@ class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UFightingComponent;
-
+class UFighterStateAsset;
 
 UCLASS()
 class FIGHTER_API AFighterPawn : public APawn
@@ -29,6 +29,24 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginMatch();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginMatch")
+	void OnBeginMatch();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginRound();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginRound")
+	void OnBeginRound();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginPoint();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="BeginPoint")
+	void OnBeginPoint();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -54,7 +72,10 @@ public:
 	void Special();
 
 	UFUNCTION(BlueprintCallable)
-	void HardCancel();
+	virtual UFighterStateAsset* HardCancel();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="HardCancel")
+	void OnHardCancel(UFighterStateAsset* CanceledState);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void TurnAround();
