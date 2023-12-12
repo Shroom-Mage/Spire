@@ -8,9 +8,9 @@
 
 
 UENUM()
-enum class EVelocityType
+enum class EVelocityType : uint8
 {
-	IGNORE = 0,
+	IGNORE,
 	ADD,
 	REPLACE
 };

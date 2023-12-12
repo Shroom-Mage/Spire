@@ -75,7 +75,7 @@ public:
 	virtual UFighterStateAsset* HardCancel();
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="HardCancel")
-	void OnHardCancel(UFighterStateAsset* CanceledState);
+	void OnHardCancel(UFighterStateAsset* CanceledState, FVector2D CanceledVelocity);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void TurnAround();

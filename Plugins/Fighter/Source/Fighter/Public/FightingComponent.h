@@ -17,11 +17,11 @@ public:
 	// Sets default values for this component's properties
 	UFightingComponent();
 
-private:
+protected:
+	UFUNCTION(BlueprintCallable)
 	// Called to enter a new state. Entering the current state will do nothing.
 	void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
 
-protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 

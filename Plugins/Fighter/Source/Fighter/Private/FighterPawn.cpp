@@ -144,8 +144,11 @@ void AFighterPawn::Special()
 
 UFighterStateAsset* AFighterPawn::HardCancel()
 {
+	FVector2D CanceledVelocity = Fighting->Velocity;
 	UFighterStateAsset* CanceledState = Fighting->HardCancel();
-	OnHardCancel(CanceledState);
+	if (CanceledState)
+		OnHardCancel(CanceledState, CanceledVelocity);
+
 	return CanceledState;
 }
 
