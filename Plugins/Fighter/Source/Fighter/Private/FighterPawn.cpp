@@ -17,6 +17,7 @@ AFighterPawn::AFighterPawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Fighting = CreateDefaultSubobject<UFightingComponent>(TEXT("Fighting"));
+	Fighting->SetOwnerFighter(this);
 
 	Base = CreateDefaultSubobject<USceneComponent>(TEXT("Base"));
 	Base->SetupAttachment(RootComponent);

@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UFightingComponent* GetFightingComponent();
 
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
+	void OnEnterState(UFighterStateAsset* StateEntered, UFighterStateAsset* StateExited);
+
 	//void Move(const struct FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)

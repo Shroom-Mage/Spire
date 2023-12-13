@@ -53,6 +53,8 @@ public:
 	UFUNCTION()
 	void OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
+	void SetOwnerFighter(class AFighterPawn* OwnerFighter);
+
 	void SetBodyBox(UBoxComponent* BodyBox);
 
 	void SetAttackBox(UBoxComponent* AttackBox);
@@ -139,6 +141,7 @@ private:
 	float EvadeInputTime = 0.0f;
 	float NormalInputTime = 0.0f;
 	float SpecialInputTime = 0.0f;
+	class AFighterPawn* OwnerFighter = nullptr;
 	UBoxComponent* OwnerBodyBox = nullptr;
 	UBoxComponent* OwnerAttackBox = nullptr;
 	USkeletalMeshComponent* OwnerSkeletalMesh = nullptr;

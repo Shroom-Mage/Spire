@@ -3,6 +3,7 @@
 
 #include "FightingComponent.h"
 #include "FightingGameMode.h"
+#include "FighterPawn.h"
 
 // Sets default values for this component's properties
 UFightingComponent::UFightingComponent()
@@ -14,9 +15,10 @@ UFightingComponent::UFightingComponent()
 
 void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
 {
-	if (State == CurrentState)
+	if (State == CurrentState || State == nullptr)
 		return;
 
+	UFighterStateAsset* PreviousState = CurrentState;
 	CurrentState = State;
 
 	// Play animation
@@ -26,14 +28,14 @@ void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType Vel
 	}
 
 	// Adjust body box
-	FVector BodyBoxLocation = FVector(CurrentState->BodyBoxLocation.X, 0.0f, CurrentState->BodyBoxLocation.Y);
-	FVector BodyBoxExtent = FVector(CurrentState->BodyBoxExtent.X, 0.0f, CurrentState->BodyBoxExtent.Y);
+	FVector BodyBoxLocation = FVector(State->BodyBoxLocation.X, 0.0f, State->BodyBoxLocation.Y);
+	FVector BodyBoxExtent = FVector(State->BodyBoxExtent.X, 0.0f, State->BodyBoxExtent.Y);
 	OwnerBodyBox->SetRelativeLocation(BodyBoxLocation);
 	OwnerBodyBox->SetBoxExtent(BodyBoxExtent);
 
 	// Adjust attack box
-	FVector AttackBoxLocation = FVector(CurrentState->AttackBoxLocation.X, 0.0f, CurrentState->AttackBoxLocation.Y);
-	FVector AttackBoxExtent = FVector(CurrentState->AttackBoxExtent.X, 0.0f, CurrentState->AttackBoxExtent.Y);
+	FVector AttackBoxLocation = FVector(State->AttackBoxLocation.X, 0.0f, State->AttackBoxLocation.Y);
+	FVector AttackBoxExtent = FVector(State->AttackBoxExtent.X, 0.0f, State->AttackBoxExtent.Y);
 	OwnerAttackBox->SetRelativeLocation(AttackBoxLocation);
 	OwnerAttackBox->SetBoxExtent(AttackBoxExtent);
 	bHasAttackHit = false;
@@ -41,10 +43,10 @@ void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType Vel
 	// Apply initial velocity
 	switch (VelocityType) {
 	case EVelocityType::ADD:
-		Velocity += CurrentState->VelocityInitial;
+		Velocity += State->VelocityInitial;
 		break;
 	case EVelocityType::REPLACE:
-		Velocity = CurrentState->VelocityInitial;
+		Velocity = State->VelocityInitial;
 		break;
 	default:
 		break;
@@ -55,9 +57,11 @@ void UFightingComponent::EnterState(UFighterStateAsset* State, EVelocityType Vel
 		StateTime = 0.0f;
 
 	// Gain resource
-	Resource = FMathf::Clamp(Resource + CurrentState->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
-	if (CurrentState->ResourceGain > 0.0f)
+	Resource = FMathf::Clamp(Resource + State->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
+	if (State->ResourceGain > 0.0f)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
+
+	OwnerFighter->OnEnterState(CurrentState, PreviousState);
 }
 
 // Called when the game starts
@@ -272,6 +276,11 @@ void UFightingComponent::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp,
 		if (OtherFightingComp == Target)
 			Target = nullptr;
 	}
+}
+
+void UFightingComponent::SetOwnerFighter(AFighterPawn* Fighter)
+{
+	OwnerFighter = Fighter;
 }
 
 void UFightingComponent::SetBodyBox(UBoxComponent* BodyBox)
