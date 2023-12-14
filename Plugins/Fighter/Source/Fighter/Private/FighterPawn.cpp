@@ -2,23 +2,17 @@
 
 
 #include "FighterPawn.h"
-#include "FightingComponent.h"
 #include "FightingGameMode.h"
+#include "FighterStateAsset.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-//#include "EnhancedInputComponent.h"
-//#include "EnhancedInputSubsystems.h"
-//#include "InputActionValue.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//Fighting = CreateDefaultSubobject<UFightingComponent>(TEXT("Fighting"));
-	//Fighting->SetOwnerFighter(this);
 
 	Base = CreateDefaultSubobject<USceneComponent>(TEXT("Base"));
 	Base->SetupAttachment(RootComponent);
@@ -298,25 +292,6 @@ void AFighterPawn::BeginPoint()
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-	//	// Movement
-	//	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFighterPawn::Move);
-	//	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFighterPawn::Jump);
-	//	EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AFighterPawn::Evade);
-
-	//	// Attacks
-	//	EnhancedInputComponent->BindAction(NormalAction, ETriggerEvent::Started, this, &AFighterPawn::Normal);
-	//	EnhancedInputComponent->BindAction(SpecialAction, ETriggerEvent::Started, this, &AFighterPawn::Special);
-	//}
-
-	//if (PlayerInputComponent) {
-	//	PlayerInputComponent->BindAxis("Move", this, &AFighterPawn::Move);
-	//	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AFighterPawn::Jump);
-	//	PlayerInputComponent->BindAction("Evade", EInputEvent::IE_Pressed, this, &AFighterPawn::Evade);
-	//	PlayerInputComponent->BindAction("Normal", EInputEvent::IE_Pressed, this, &AFighterPawn::Normal);
-	//	PlayerInputComponent->BindAction("Special", EInputEvent::IE_Pressed, this, &AFighterPawn::Special);
-	//}
 }
 
 void AFighterPawn::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -338,11 +313,6 @@ void AFighterPawn::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActo
 			Target = nullptr;
 	}
 }
-
-//void AFighterPawn::Move(const FInputActionValue& Value)
-//{
-//	Fighting->Move(Value.Get<float>());
-//}
 
 bool AFighterPawn::GetIsAttackActive()
 {

@@ -3,17 +3,11 @@
 
 #include "FightingGameMode.h"
 #include "FighterPawn.h"
-#include "FightingComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AFightingGameMode::AFightingGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
-}
-
-void AFightingGameMode::AddPoint(UFightingComponent* Recipient)
-{
-	AddPoint(Cast<AFighterPawn>(Recipient->GetOwner()));
 }
 
 void AFightingGameMode::AddPoint(AFighterPawn* Recipient)

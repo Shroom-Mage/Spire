@@ -7,7 +7,6 @@
 #include "FightingGameMode.generated.h"
 
 class AFighterPawn;
-class UFightingComponent;
 
 /**
  * 
@@ -49,7 +48,6 @@ public:
 
 	UFUNCTION()
 	void AddPoint(AFighterPawn* Recipient);
-	void AddPoint(UFightingComponent* Recipient);
 
 	UFUNCTION(BlueprintCallable, Category="Match")
 	int GetScore(AFighterPawn* FightingComp);

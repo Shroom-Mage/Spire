@@ -10,7 +10,6 @@ class UBoxComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
-class UFightingComponent;
 class UFighterStateAsset;
 class AFightingGameMode;
 
@@ -66,8 +65,6 @@ public:
 	void OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	bool GetIsAttackActive();
-
-	//void Move(const struct FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void Move(float Value);
@@ -125,10 +122,6 @@ private:
 	UCameraComponent* Camera;
 
 	bool bIsFacingRight = true;
-
-//protected:
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-//	UFightingComponent* Fighting;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")

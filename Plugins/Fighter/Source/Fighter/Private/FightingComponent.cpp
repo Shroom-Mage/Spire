@@ -2,8 +2,6 @@
 
 
 #include "FightingComponent.h"
-#include "FightingGameMode.h"
-#include "FighterPawn.h"
 
 // Sets default values for this component's properties
 UFightingComponent::UFightingComponent()
@@ -23,29 +21,4 @@ void UFightingComponent::BeginPlay()
 void UFightingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
-//void UFightingComponent::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Component OverlapBegin")));
-//	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-//		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-//		if (OtherFighter != OwnerFighter)
-//			OwnerFighter->Target = OtherFighter;
-//	}
-//}
-//
-//void UFightingComponent::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-//{
-//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Component OverlapEnd")));
-//	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-//		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-//		if (OtherFighter == OwnerFighter->Target)
-//			OwnerFighter->Target = nullptr;
-//	}
-//}
-
-void UFightingComponent::SetOwnerFighter(AFighterPawn* Fighter)
-{
-	OwnerFighter = Fighter;
 }
