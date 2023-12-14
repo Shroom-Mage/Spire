@@ -12,6 +12,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UFightingComponent;
 class UFighterStateAsset;
+class AFightingGameMode;
 
 UCLASS()
 class FIGHTER_API AFighterPawn : public APawn
@@ -25,6 +26,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	// Called to enter a new state. Entering the current state will do nothing.
+	void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
+	void OnEnterState(UFighterStateAsset* StateEntered, UFighterStateAsset* StateExited);
 
 public:	
 	// Called every frame
@@ -50,12 +58,14 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	UFUNCTION()
+	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION(BlueprintCallable)
-	UFightingComponent* GetFightingComponent();
-
-	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
-	void OnEnterState(UFighterStateAsset* StateEntered, UFighterStateAsset* StateExited);
+	UFUNCTION()
+	void OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	bool GetIsAttackActive();
 
 	//void Move(const struct FInputActionValue& Value);
 
@@ -75,7 +85,7 @@ public:
 	void Special();
 
 	UFUNCTION(BlueprintCallable)
-	virtual UFighterStateAsset* HardCancel();
+	virtual void HardCancel();
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="HardCancel")
 	void OnHardCancel(UFighterStateAsset* CanceledState, FVector2D CanceledVelocity);
@@ -83,11 +93,17 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void TurnAround();
 
+	UFUNCTION(BlueprintCallable)
+	void ResetToNeutral();
+
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void FaceDirection(bool bFaceRight);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	bool GetIsFacingRight();
+	
+	UFUNCTION(BlueprintCallable)
+	void TakeHit(AFighterPawn* Attacker, float Damage);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
@@ -110,7 +126,60 @@ private:
 
 	bool bIsFacingRight = true;
 
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UFightingComponent* Fighting;
+//protected:
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+//	UFightingComponent* Fighting;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float Health = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float Resource = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
+	float ResourceMax = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	UFighterStateAsset* CurrentState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
+	FVector2D Velocity = {0.0f, 0.0f};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* StandingBackward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* CrouchingNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* AirBackward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeNeutral;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
+	UFighterStateAsset* EvadeBackward;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	AFighterPawn* Target = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	float StateTime = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bIsAttackActive = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bCanCancelState = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bHasAttackHit = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UAnimSequence* CurrentAnimation = nullptr;
+
+	float MovementInput = 0.0f;
+	float JumpInputTime = 0.0f;
+	float EvadeInputTime = 0.0f;
+	float NormalInputTime = 0.0f;
+	float SpecialInputTime = 0.0f;
+
+	class AFightingGameMode* GameMode;
 };
