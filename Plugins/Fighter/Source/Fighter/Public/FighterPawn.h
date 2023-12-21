@@ -28,7 +28,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	// Called to enter a new state. Entering the current state will do nothing.
-	void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
+	virtual void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
 	void OnEnterState(UFighterStateAsset* StateEntered, UFighterStateAsset* StateExited);
@@ -87,20 +87,23 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="HardCancel")
 	void OnHardCancel(UFighterStateAsset* CanceledState, FVector2D CanceledVelocity);
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
+	UFUNCTION(BlueprintCallable)
 	void TurnAround();
 
 	UFUNCTION(BlueprintCallable)
 	void ResetToNeutral();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
+	UFUNCTION(BlueprintCallable)
 	void FaceDirection(bool bFaceRight);
-
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	bool GetIsFacingRight();
 	
 	UFUNCTION(BlueprintCallable)
 	void TakeHit(AFighterPawn* Attacker, float Damage);
+
+	UFUNCTION(BlueprintCallable)
+	USkeletalMeshComponent* GetSkeletalMeshComponent();
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsFacingRight();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
@@ -123,6 +126,28 @@ private:
 
 	bool bIsFacingRight = true;
 
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	AFighterPawn* Target = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Status", meta=(AllowPrivateAccess="true"))
+	float StateTime = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bIsAttackActive = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bCanCancelState = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
+	bool bHasAttackHit = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UAnimSequence* CurrentAnimation = nullptr;
+
+	float MovementInput = 0.0f;
+	float JumpInputTime = 0.0f;
+	float EvadeInputTime = 0.0f;
+	float NormalInputTime = 0.0f;
+	float SpecialInputTime = 0.0f;
+
+	AFightingGameMode* GameMode;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float Health = 1.0f;
@@ -130,10 +155,12 @@ public:
 	float Resource = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	float ResourceMax = 5.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	UFighterStateAsset* CurrentState;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	FVector2D Velocity = {0.0f, 0.0f};
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* StandingNeutral;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
@@ -154,25 +181,4 @@ public:
 	UFighterStateAsset* EvadeForward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* EvadeBackward;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
-	AFighterPawn* Target = nullptr;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	float StateTime = 0.0f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	bool bIsAttackActive = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	bool bCanCancelState = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	bool bHasAttackHit = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
-	UAnimSequence* CurrentAnimation = nullptr;
-
-	float MovementInput = 0.0f;
-	float JumpInputTime = 0.0f;
-	float EvadeInputTime = 0.0f;
-	float NormalInputTime = 0.0f;
-	float SpecialInputTime = 0.0f;
-
-	class AFightingGameMode* GameMode;
 };

@@ -22,9 +22,6 @@ AFighterPawn::AFighterPawn()
 
 	BodyBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyBox"));
 	BodyBox->SetupAttachment(Base);
-	BodyBox->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	BodyBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	BodyBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	BodyBox->ShapeColor = FColor(0, 0, 255, 255);
 
 	AttackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackBox"));
@@ -296,7 +293,7 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AFighterPawn::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Pawn OverlapBegin")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapBegin from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
 	if (OtherComp->GetFName() == TEXT("BodyBox")) {
 		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
 		if (OtherFighter != this)
@@ -306,7 +303,7 @@ void AFighterPawn::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 
 void AFighterPawn::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Pawn OverlapEnd")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapEnd from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
 	if (OtherComp->GetFName() == TEXT("BodyBox")) {
 		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
 		if (OtherFighter == Target)
@@ -401,11 +398,6 @@ void AFighterPawn::FaceDirection(bool bFaceRight)
 	TurnAround();
 }
 
-bool AFighterPawn::GetIsFacingRight()
-{
-	return bIsFacingRight;
-}
-
 void AFighterPawn::TakeHit(AFighterPawn* Attacker, float Damage)
 {
 	Health -= Damage;
@@ -414,4 +406,14 @@ void AFighterPawn::TakeHit(AFighterPawn* Attacker, float Damage)
 	if (GameMode) {
 		GameMode->AddPoint(Attacker);
 	}
+}
+
+USkeletalMeshComponent* AFighterPawn::GetSkeletalMeshComponent()
+{
+	return SkeletalMesh;
+}
+
+bool AFighterPawn::GetIsFacingRight()
+{
+	return bIsFacingRight;
 }
