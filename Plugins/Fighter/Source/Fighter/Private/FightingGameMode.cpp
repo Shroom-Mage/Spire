@@ -10,20 +10,23 @@ AFightingGameMode::AFightingGameMode()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AFightingGameMode::AddPoint(AFighterPawn* Recipient)
+void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipient)
 {
 	int Round = GetRound();
 
-	if (Recipient == Fighter0)
+	if (Recipient != Fighter0 && Recipient != Fighter1)
+		return;
+
+	if (Attacker == Fighter0)
 		Score0++;
-	else if (Recipient == Fighter1)
+	else if (Attacker == Fighter1)
 		Score1++;
 
 	if (GetRound() > Round) {
 		BeginRound();
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Score: %i"), GetScore(Recipient)));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Score: %i"), GetScore(Attacker)));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Round: %i"), GetRound()));
 
 	BeginPoint();

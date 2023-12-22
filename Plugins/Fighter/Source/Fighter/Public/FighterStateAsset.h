@@ -24,6 +24,9 @@ class FIGHTER_API UFighterStateAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	// The state is regarded as an attack if bIsAttack is true.
+	UPROPERTY(EditAnywhere, Category="Attack")
+	bool bIsAttack = false;
 	// When Duration is reached (in seconds), the state will end.
 	UPROPERTY(EditAnywhere, Category="Timing")
 	float Duration;

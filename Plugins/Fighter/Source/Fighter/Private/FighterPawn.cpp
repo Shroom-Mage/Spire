@@ -404,7 +404,7 @@ void AFighterPawn::TakeHit(AFighterPawn* Attacker, float Damage)
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT!"));
 	// Increment the score
 	if (GameMode) {
-		GameMode->AddPoint(Attacker);
+		GameMode->RegisterHit(Attacker, this);
 	}
 }
 

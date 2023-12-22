@@ -97,7 +97,7 @@ public:
 	void FaceDirection(bool bFaceRight);
 	
 	UFUNCTION(BlueprintCallable)
-	void TakeHit(AFighterPawn* Attacker, float Damage);
+	virtual void TakeHit(AFighterPawn* Attacker, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetSkeletalMeshComponent();
@@ -126,6 +126,14 @@ private:
 
 	bool bIsFacingRight = true;
 
+	float MovementInput = 0.0f;
+	float JumpInputTime = 0.0f;
+	float EvadeInputTime = 0.0f;
+	float NormalInputTime = 0.0f;
+	float SpecialInputTime = 0.0f;
+
+	AFightingGameMode* GameMode;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	AFighterPawn* Target = nullptr;
@@ -139,14 +147,6 @@ protected:
 	bool bHasAttackHit = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
 	UAnimSequence* CurrentAnimation = nullptr;
-
-	float MovementInput = 0.0f;
-	float JumpInputTime = 0.0f;
-	float EvadeInputTime = 0.0f;
-	float NormalInputTime = 0.0f;
-	float SpecialInputTime = 0.0f;
-
-	AFightingGameMode* GameMode;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
