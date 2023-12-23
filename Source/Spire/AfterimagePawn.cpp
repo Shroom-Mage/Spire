@@ -20,7 +20,7 @@ void AAfterimagePawn::EnterState(UFighterStateAsset* State, EVelocityType Veloci
 
 void AAfterimagePawn::TakeHit(AFighterPawn* Attacker, float Damage)
 {
-	if (Attacker != GetOwner()) {
+	if (Attacker != Owner) {
 		Disappear();
 	}
 }

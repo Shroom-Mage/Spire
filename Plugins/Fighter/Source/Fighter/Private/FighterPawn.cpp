@@ -400,6 +400,9 @@ void AFighterPawn::FaceDirection(bool bFaceRight)
 
 void AFighterPawn::TakeHit(AFighterPawn* Attacker, float Damage)
 {
+	if (Attacker->Owner == this)
+		return;
+
 	Health -= Damage;
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HIT!"));
 	// Increment the score

@@ -14,13 +14,15 @@ void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipi
 {
 	int Round = GetRound();
 
-	if (Recipient != Fighter0 && Recipient != Fighter1)
+	if (Attacker->Owner == Recipient || Recipient->Owner == Attacker)
 		return;
 
-	if (Attacker == Fighter0)
-		Score0++;
-	else if (Attacker == Fighter1)
+	if (Recipient == Fighter0)
 		Score1++;
+	else if (Recipient == Fighter1)
+		Score0++;
+	else
+		return;
 
 	if (GetRound() > Round) {
 		BeginRound();
