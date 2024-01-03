@@ -90,25 +90,25 @@ void AFightingGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Fighter0 && Fighter1) {
-		double Position0 = Fighter0->GetActorLocation().X;
-		double Position1 = Fighter1->GetActorLocation().X;
+	//if (Fighter0 && Fighter1) {
+	//	double Position0 = Fighter0->GetActorLocation().X;
+	//	double Position1 = Fighter1->GetActorLocation().X;
 
-		// Fighter0 is to the left of Fighter1
-		if (Position0 < Position1) {
-			if (!Fighter0->GetIsFacingRight())
-				Fighter0->FaceDirection(true);
-			if (Fighter1->GetIsFacingRight())
-				Fighter1->FaceDirection(false);
-		}
-		// Fighter1 is to the left of Fighter0
-		if (Position1 < Position0) {
-			if (!Fighter1->GetIsFacingRight())
-				Fighter1->FaceDirection(true);
-			if (Fighter0->GetIsFacingRight())
-				Fighter0->FaceDirection(false);
-		}
-	}
+	//	// Fighter0 is to the left of Fighter1
+	//	if (Position0 < Position1) {
+	//		if (!Fighter0->GetIsFacingRight())
+	//			Fighter0->FaceDirection(true);
+	//		if (Fighter1->GetIsFacingRight())
+	//			Fighter1->FaceDirection(false);
+	//	}
+	//	// Fighter1 is to the left of Fighter0
+	//	if (Position1 < Position0) {
+	//		if (!Fighter1->GetIsFacingRight())
+	//			Fighter1->FaceDirection(true);
+	//		if (Fighter0->GetIsFacingRight())
+	//			Fighter0->FaceDirection(false);
+	//	}
+	//}
 }
 
 int AFightingGameMode::GetScore(AFighterPawn* FightingComp)

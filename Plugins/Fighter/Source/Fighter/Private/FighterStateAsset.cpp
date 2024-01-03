@@ -2,3 +2,9 @@
 
 
 #include "FighterStateAsset.h"
+#include "FighterAttackStateAsset.h"
+
+UFighterStateAsset::UFighterStateAsset()
+{
+	
+}

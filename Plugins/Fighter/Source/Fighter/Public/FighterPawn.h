@@ -11,6 +11,7 @@ class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UFighterStateAsset;
+class UFighterAttackStateAsset;
 class AFightingGameMode;
 
 UCLASS()
@@ -28,10 +29,15 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	// Called to enter a new state. Entering the current state will do nothing.
-	virtual void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation = false, bool bSplit = false);
+	virtual void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit = false);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
 	void OnEnterState(UFighterStateAsset* StateEntered, UFighterStateAsset* StateExited);
+
+	virtual void EnterAttackState(UFighterAttackStateAsset* AttackState, EVelocityType VelocityType, bool bSplit = false);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterAttackState")
+	void OnEnterAttackState(UFighterAttackStateAsset* StateEntered, UFighterStateAsset* StateExited);
 
 public:	
 	// Called every frame
@@ -105,6 +111,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsFacingRight();
 
+	UFUNCTION(BlueprintCallable)
+	UAnimSequence* GetAnimationSequence();
+	
+	UFUNCTION(BlueprintCallable)
+	float GetAnimationPlayRate();
+
+	UFUNCTION(BlueprintCallable)
+	bool GetLoopAnimation();
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	USceneComponent* Base;
@@ -123,6 +138,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
 	UCameraComponent* Camera;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	bool bAnimationNeedsReset;
 
 	bool bIsFacingRight = true;
 
@@ -135,6 +153,10 @@ private:
 	AFightingGameMode* GameMode;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Status", meta = (AllowPrivateAccess = "true"))
+	UFighterStateAsset* CurrentState;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta = (AllowPrivateAccess = "true"))
+	UFighterAttackStateAsset* CurrentAttackState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	AFighterPawn* Target = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Status", meta=(AllowPrivateAccess="true"))
@@ -145,8 +167,6 @@ protected:
 	bool bCanCancelState = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
 	bool bHasAttackHit = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
-	UAnimSequence* CurrentAnimation = nullptr;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
@@ -157,28 +177,24 @@ public:
 	float ResourceMax = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
-	UFighterStateAsset* CurrentState;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Status")
 	FVector2D Velocity = {0.0f, 0.0f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* StandingNeutral;
+	UFighterStateAsset* GroundNeutral;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* StandingForward;
+	UFighterStateAsset* GroundForward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* StandingBackward;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* CrouchingNeutral;
+	UFighterStateAsset* GroundCrouching;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* AirNeutral;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* AirForward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* AirBackward;
+	UFighterStateAsset* AirCrouching;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* EvadeNeutral;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterStateAsset* EvadeForward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
-	UFighterStateAsset* EvadeBackward;
+	UFighterStateAsset* EvadeCrouching;
 };

@@ -4,6 +4,7 @@
 #include "FighterPawn.h"
 #include "FightingGameMode.h"
 #include "FighterStateAsset.h"
+#include "FighterAttackStateAsset.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -47,18 +48,15 @@ void AFighterPawn::BeginPlay()
 	GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
 }
 
-void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
+void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
 {
 	if (State == CurrentState || State == nullptr)
 		return;
 
 	UFighterStateAsset* PreviousState = CurrentState;
 	CurrentState = State;
-
-	// Play animation
-	if (State->Animation != CurrentAnimation || bResetAnimation) {
-		CurrentAnimation = State->Animation;
-		SkeletalMesh->PlayAnimation(State->Animation, State->bLoopAnimation);
+	if (!CurrentState->GetIsAttack()) {
+		CurrentAttackState = nullptr;
 	}
 
 	// Adjust body box
@@ -66,13 +64,6 @@ void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityT
 	FVector BodyBoxExtent = FVector(State->BodyBoxExtent.X, 0.0f, State->BodyBoxExtent.Y);
 	BodyBox->SetRelativeLocation(BodyBoxLocation);
 	BodyBox->SetBoxExtent(BodyBoxExtent);
-
-	// Adjust attack box
-	FVector AttackBoxLocation = FVector(State->AttackBoxLocation.X, 0.0f, State->AttackBoxLocation.Y);
-	FVector AttackBoxExtent = FVector(State->AttackBoxExtent.X, 0.0f, State->AttackBoxExtent.Y);
-	AttackBox->SetRelativeLocation(AttackBoxLocation);
-	AttackBox->SetBoxExtent(AttackBoxExtent);
-	bHasAttackHit = false;
 
 	// Apply initial velocity
 	switch (VelocityType) {
@@ -98,6 +89,23 @@ void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityT
 	OnEnterState(CurrentState, PreviousState);
 }
 
+void AFighterPawn::EnterAttackState(UFighterAttackStateAsset* AttackState, EVelocityType VelocityType, bool bSplit)
+{
+	UFighterStateAsset* PreviousState = CurrentState;
+	CurrentAttackState = AttackState;
+
+	// Adjust attack box
+	FVector AttackBoxLocation = FVector(AttackState->AttackBoxLocation.X, 0.0f, AttackState->AttackBoxLocation.Y);
+	FVector AttackBoxExtent = FVector(AttackState->AttackBoxExtent.X, 0.0f, AttackState->AttackBoxExtent.Y);
+	AttackBox->SetRelativeLocation(AttackBoxLocation);
+	AttackBox->SetBoxExtent(AttackBoxExtent);
+	bHasAttackHit = false;
+
+	EnterState(AttackState, VelocityType, bSplit);
+
+	OnEnterAttackState(CurrentAttackState, PreviousState);
+}
+
 // Called every frame
 void AFighterPawn::Tick(float DeltaTime)
 {
@@ -114,18 +122,20 @@ void AFighterPawn::Tick(float DeltaTime)
 	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
-	if (StateTime > CurrentState->ActiveStartTime && StateTime < CurrentState->ActiveEndTime && !bHasAttackHit) {
-		bIsAttackActive = true;
-		AttackBox->ShapeColor.A = 255;
-		// Check for opponent and hit
-		if (Target) {
-			bHasAttackHit = true;
-			Target->TakeHit(this, 1.0f);
+	if (CurrentAttackState) {
+		if (StateTime > CurrentAttackState->ActiveStartTime && StateTime < CurrentAttackState->ActiveEndTime && !bHasAttackHit) {
+			bIsAttackActive = true;
+			AttackBox->ShapeColor.A = 255;
+			// Check for opponent and hit
+			if (Target) {
+				bHasAttackHit = true;
+				Target->TakeHit(this, 1.0f);
+			}
 		}
-	}
-	else {
-		bIsAttackActive = false;
-		AttackBox->ShapeColor.A = 0;
+		else {
+			bIsAttackActive = false;
+			AttackBox->ShapeColor.A = 0;
+		}
 	}
 
 	// Approach target velocity
@@ -159,32 +169,35 @@ void AFighterPawn::Tick(float DeltaTime)
 	SetActorLocation(Destination);
 
 	// Cancel state
-	if (CurrentState->CancelTime > 0.0f
-		&& StateTime > CurrentState->CancelTime
-		&& (MovementInput < 0.0f
-			|| MovementInput > 0.0f
-			|| JumpInputTime > 0.0f
-			|| EvadeInputTime > 0.0f
-			|| NormalInputTime > 0.0f
-			|| SpecialInputTime > 0.0f))
-	{
-		if (bTouchedGround)
-			CurrentState = StandingNeutral;
-		else
-			CurrentState = AirNeutral;
+	if (CurrentAttackState) {
+		if (CurrentAttackState->CancelTime > 0.0f
+			&& StateTime > CurrentAttackState->CancelTime
+			&& (MovementInput < 0.0f
+				|| MovementInput > 0.0f
+				|| JumpInputTime > 0.0f
+				|| EvadeInputTime > 0.0f
+				|| NormalInputTime > 0.0f
+				|| SpecialInputTime > 0.0f))
+		{
+			if (bTouchedGround)
+				CurrentState = GroundNeutral;
+			else
+				CurrentState = AirNeutral;
+		}
 	}
 
-	// Enter this state's normal attack if attempting to attack
+	// Attacking (Normal)
 	if (NormalInputTime > 0.0f
 		&& CurrentState->AttackNormal)
 	{
 		NormalInputTime = 0.0f;
-		EnterState(CurrentState->AttackNormal, EVelocityType::ADD, true);
+		EnterAttackState(CurrentState->AttackNormal, EVelocityType::ADD);
+		return;
 	}
-	// Enter Air state if attempting to jump while touching the ground
-	if ((CurrentState == StandingNeutral
-		|| CurrentState == StandingForward
-		|| CurrentState == StandingBackward)
+	// Jumping
+	if ((CurrentState == GroundNeutral
+		|| CurrentState == GroundForward
+		|| CurrentState == GroundCrouching)
 		&& bTouchedGround
 		&& JumpInputTime > 0.0f
 		&& AirNeutral)
@@ -193,74 +206,59 @@ void AFighterPawn::Tick(float DeltaTime)
 		EnterState(AirNeutral, EVelocityType::ADD);
 		return;
 	}
-	// Enter Landing state if the ground is touched from the air
+	// Landing
 	if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward
-		|| CurrentState == AirBackward)
+		|| CurrentState == AirCrouching)
 		&& bTouchedGround
-		&& StandingNeutral)
+		&& GroundNeutral)
 	{
-		EnterState(StandingNeutral, EVelocityType::ADD);
+		EnterState(GroundNeutral, EVelocityType::ADD);
 		return;
 	}
-	// Enter StandingForward state if attempting to move while standing
-	if ((CurrentState == StandingNeutral
-		|| CurrentState == StandingForward
-		|| CurrentState == StandingBackward)
-		&& MovementInput > 0.0f
-		&& StandingForward)
+	// Moving (Ground)
+	if ((CurrentState == GroundNeutral
+		|| CurrentState == GroundForward)
+		&& MovementInput != 0.0f
+		&& GroundForward)
 	{
-		EnterState(StandingForward, EVelocityType::IGNORE);
+		if (MovementInput < 0.0f) {
+			TurnAround();
+		}
+		EnterState(GroundForward, EVelocityType::IGNORE);
 		return;
 	}
-	// Enter StandingBackward state if attempting to move while standing
-	if ((CurrentState == StandingNeutral
-		|| CurrentState == StandingForward
-		|| CurrentState == StandingBackward)
-		&& MovementInput < 0.0f
-		&& StandingBackward)
-	{
-		EnterState(StandingBackward, EVelocityType::IGNORE);
-		return;
-	}
-	// Enter StandingNeutral state if not attempting to move while standing
-	if ((CurrentState == StandingNeutral
-		|| CurrentState == StandingForward
-		|| CurrentState == StandingBackward)
+	// Stopping (Ground)
+	if ((CurrentState == GroundNeutral
+		|| CurrentState == GroundForward)
 		&& MovementInput == 0.0f
-		&& StandingNeutral)
+		&& GroundNeutral)
 	{
-		EnterState(StandingNeutral, EVelocityType::IGNORE);
+		EnterState(GroundNeutral, EVelocityType::IGNORE);
 		return;
 	}
-	// Enter AirForward state if attempting to move while Air
+	// Moving (Air)
 	if ((CurrentState == AirNeutral
-		|| CurrentState == AirBackward)
-		&& MovementInput > 0.0f
+		|| CurrentState == AirForward)
+		&& MovementInput != 0.0f
 		&& AirForward)
 	{
+		if (MovementInput < 0.0f) {
+			TurnAround();
+		}
 		EnterState(AirForward, EVelocityType::IGNORE);
 		return;
 	}
-	// Enter AirBackward state if attempting to move while Air
+	// Stopping (Air)
 	if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward)
-		&& MovementInput < 0.0f
-		&& AirBackward)
-	{
-		EnterState(AirBackward, EVelocityType::IGNORE);
-		return;
-	}
-	// Enter AirNeutral state if not attempting to move while Air
-	if ((CurrentState == AirForward
-		|| CurrentState == AirBackward)
 		&& MovementInput == 0.0f
 		&& AirNeutral)
 	{
 		EnterState(AirNeutral, EVelocityType::IGNORE);
 		return;
 	}
-	// Enter End state if Duration was reached
+	// Ending
 	if (CurrentState->Duration > 0.0f
 		&& StateTime >= CurrentState->Duration
 		&& CurrentState->End)
@@ -383,7 +381,7 @@ void AFighterPawn::ResetToNeutral()
 
 	Velocity = { 0.0f, 0.0f };
 	if (bTouchingGround) {
-		EnterState(StandingNeutral, EVelocityType::IGNORE, true);
+		EnterState(GroundNeutral, EVelocityType::IGNORE, true);
 	}
 	else {
 		EnterState(AirNeutral, EVelocityType::IGNORE, true);
@@ -419,4 +417,40 @@ USkeletalMeshComponent* AFighterPawn::GetSkeletalMeshComponent()
 bool AFighterPawn::GetIsFacingRight()
 {
 	return bIsFacingRight;
+}
+
+UAnimSequence* AFighterPawn::GetAnimationSequence()
+{
+	if (!CurrentState->GetIsAttack()) {
+		return CurrentState->AnimationLoop;
+	}
+	else if (StateTime < CurrentAttackState->ActiveStartTime) {
+		return CurrentAttackState->AnimationLead;
+	}
+	else {
+		return CurrentAttackState->AnimationFollow;
+	}
+}
+
+float AFighterPawn::GetAnimationPlayRate()
+{
+	if (!CurrentState->GetIsAttack()) {
+		return 1.0f;
+	}
+	else if (StateTime < CurrentAttackState->ActiveStartTime) {
+		return 1.0f / (CurrentAttackState->ActiveStartTime);
+	}
+	else {
+		return 1.0f / (CurrentAttackState->Duration - CurrentAttackState->ActiveStartTime);
+	}
+}
+
+bool AFighterPawn::GetLoopAnimation()
+{
+	if (!CurrentState->GetIsAttack()) {
+		return CurrentState->bLoopAnimation;
+	}
+	else {
+		return false;
+	}
 }

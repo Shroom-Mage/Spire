@@ -9,13 +9,13 @@ void AAfterimagePawn::Disappear()
 	SetActorLocation(FVector(0.0, 4000.0, 0.0));
 }
 
-void AAfterimagePawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bResetAnimation, bool bSplit)
+void AAfterimagePawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
 {
-	if (!State->bIsAttack) {
+	if (!State->GetIsAttack()) {
 		Disappear();
 	}
 
-	Super::EnterState(State, VelocityType, bResetAnimation, bSplit);
+	Super::EnterState(State, VelocityType, bSplit);
 }
 
 void AAfterimagePawn::TakeHit(AFighterPawn* Attacker, float Damage)
