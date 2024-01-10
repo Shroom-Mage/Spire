@@ -79,6 +79,9 @@ public:
 	void Jump();
 
 	UFUNCTION(BlueprintCallable)
+	void Crouch(float Value);
+
+	UFUNCTION(BlueprintCallable)
 	void Evade();
 
 	UFUNCTION(BlueprintCallable)
@@ -145,6 +148,7 @@ private:
 	bool bIsFacingRight = true;
 
 	float MovementInput = 0.0f;
+	float CrouchInput = 0.0f;
 	float JumpInputTime = 0.0f;
 	float EvadeInputTime = 0.0f;
 	float NormalInputTime = 0.0f;
@@ -153,9 +157,9 @@ private:
 	AFightingGameMode* GameMode;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Status", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
 	UFighterStateAsset* CurrentState;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta = (AllowPrivateAccess="true"))
 	UFighterAttackStateAsset* CurrentAttackState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
 	AFighterPawn* Target = nullptr;

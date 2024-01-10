@@ -195,7 +195,7 @@ void AFighterPawn::Tick(float DeltaTime)
 		return;
 	}
 	// Jumping
-	if ((CurrentState == GroundNeutral
+	else if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& bTouchedGround
@@ -207,7 +207,7 @@ void AFighterPawn::Tick(float DeltaTime)
 		return;
 	}
 	// Landing
-	if ((CurrentState == AirNeutral
+	else if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward
 		|| CurrentState == AirCrouching)
 		&& bTouchedGround
@@ -216,10 +216,22 @@ void AFighterPawn::Tick(float DeltaTime)
 		EnterState(GroundNeutral, EVelocityType::ADD);
 		return;
 	}
+	// Crouching (Ground)
+	else if ((CurrentState == GroundNeutral
+		|| CurrentState == GroundForward
+		|| CurrentState == GroundCrouching)
+		&& CrouchInput > 0.0f
+		&& GroundCrouching)
+	{
+		EnterState(GroundCrouching, EVelocityType::IGNORE);
+		return;
+	}
 	// Moving (Ground)
 	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward)
+		|| CurrentState == GroundForward
+		|| CurrentState == GroundCrouching)
 		&& MovementInput != 0.0f
+		&& CrouchInput == 0.0f
 		&& GroundForward)
 	{
 		if (MovementInput < 0.0f) {
@@ -230,11 +242,22 @@ void AFighterPawn::Tick(float DeltaTime)
 	}
 	// Stopping (Ground)
 	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward)
+		|| CurrentState == GroundForward
+		|| CurrentState == GroundCrouching)
 		&& MovementInput == 0.0f
 		&& GroundNeutral)
 	{
 		EnterState(GroundNeutral, EVelocityType::IGNORE);
+		return;
+	}
+	// Crouching (Air)
+	if ((CurrentState == AirNeutral
+		|| CurrentState == AirForward
+		|| CurrentState == AirCrouching)
+		&& CrouchInput> 0.0f
+		&& AirCrouching)
+	{
+		EnterState(AirCrouching, EVelocityType::IGNORE);
 		return;
 	}
 	// Moving (Air)
@@ -322,6 +345,11 @@ void AFighterPawn::Move(float Value)
 void AFighterPawn::Jump()
 {
 	JumpInputTime = 0.25f;
+}
+
+void AFighterPawn::Crouch(float Value)
+{
+	CrouchInput = Value;
 }
 
 void AFighterPawn::Evade()
