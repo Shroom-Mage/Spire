@@ -264,6 +264,7 @@ void AFighterPawn::Tick(float DeltaTime)
 	if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward)
 		&& MovementInput != 0.0f
+		&& CrouchInput == 0.0f
 		&& AirForward)
 	{
 		if (MovementInput < 0.0f) {
@@ -274,7 +275,8 @@ void AFighterPawn::Tick(float DeltaTime)
 	}
 	// Stopping (Air)
 	if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward)
+		|| CurrentState == AirForward
+		|| CurrentState == AirCrouching)
 		&& MovementInput == 0.0f
 		&& AirNeutral)
 	{
