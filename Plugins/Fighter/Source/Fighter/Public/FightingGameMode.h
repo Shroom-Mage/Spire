@@ -69,6 +69,12 @@ private:
 	int Score1;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fighter Parameters")
+	UMaterialInterface* Fighter0Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fighter Parameters")
+	UMaterialInterface* Fighter1Material;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	double StartingPosition0;
 
