@@ -7,7 +7,6 @@
 #include "FightingGameMode.generated.h"
 
 class AFighterPawn;
-class UFightingComponent;
 
 /**
  * 
@@ -48,8 +47,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void AddPoint(AFighterPawn* Recipient);
-	void AddPoint(UFightingComponent* Recipient);
+	void RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipient);
 
 	UFUNCTION(BlueprintCallable, Category="Match")
 	int GetScore(AFighterPawn* FightingComp);
@@ -57,6 +55,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Match")
 	int GetRound();
 
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	AFighterPawn* Fighter0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	AFighterPawn* Fighter1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	int Score0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	int Score1;
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	double StartingPosition0;
 
@@ -65,16 +77,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMultiplier = 1.0f;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
-	AFighterPawn* Fighter0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
-	AFighterPawn* Fighter1;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
-	int Score0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match")
-	int Score1;
 };
