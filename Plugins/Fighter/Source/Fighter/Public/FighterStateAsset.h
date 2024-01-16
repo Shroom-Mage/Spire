@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAttack() { return bIsAttack; }
 
+	UFUNCTION(BlueprintCallable)
+	bool GetIsAir() { return bIsAir; }
+
 protected:
 	// The state is regarded as an attack if bIsAttack is true.
 	UPROPERTY(VisibleAnywhere, Category="Attack", meta = (AllowPrivateAccess = "true"))
@@ -57,6 +60,9 @@ public:
 	// When the state is entered, the fighter gains resource equal to ResourceGain.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Resource")
 	float ResourceGain = 0.0f;
+	// When entering this state, ShiftStart is distance to translate irrespective of Velocity.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
+	bool bIsAir;
 	// When entering this state, ShiftStart is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D ShiftStart;
