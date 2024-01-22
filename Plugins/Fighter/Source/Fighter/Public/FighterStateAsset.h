@@ -39,9 +39,6 @@ protected:
 	bool bIsAttack = false;
 
 public:
-	// When Duration is reached (in seconds), the state will end.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
-	float Duration;
 	// The location of the body collider.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
 	FVector2D BodyBoxLocation;
@@ -84,7 +81,7 @@ public:
 	// When the attack button is pressed, the fighter will enter this state.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chaining")
 	class UFighterAttackStateAsset* AttackNormal;
-	// When StateTime has reached the Duration, the fighter will enter this state.
+	// When CurrentFrame has reached the Duration, the fighter will enter this state.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chaining")
 	UFighterStateAsset* End;
 };
