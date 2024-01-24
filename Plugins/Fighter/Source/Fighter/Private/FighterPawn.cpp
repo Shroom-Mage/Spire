@@ -79,7 +79,7 @@ void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityT
 
 	// Reset time
 	if (!bSplit)
-		StateTime = 0.0f;
+		CurrentFrame = 0.0f;
 
 	// Gain resource
 	Resource = FMathf::Clamp(Resource + State->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
@@ -115,7 +115,7 @@ void AFighterPawn::Tick(float DeltaTime)
 		return;
 
 	// Update timers
-	StateTime += DeltaTime;
+	CurrentFrame += DeltaTime * 60.0f;
 	JumpInputTime -= DeltaTime;
 	EvadeInputTime -= DeltaTime;
 	NormalInputTime -= DeltaTime;
@@ -123,7 +123,7 @@ void AFighterPawn::Tick(float DeltaTime)
 
 	// Set attack activity
 	if (CurrentAttackState) {
-		if (StateTime > CurrentAttackState->ActiveStartTime && StateTime < CurrentAttackState->ActiveEndTime && !bHasAttackHit) {
+		if (CurrentFrame > CurrentAttackState->StartupFrames && CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames && !bHasAttackHit) {
 			bIsAttackActive = true;
 			AttackBox->ShapeColor.A = 255;
 			// Check for opponent and hit
@@ -170,22 +170,34 @@ void AFighterPawn::Tick(float DeltaTime)
 
 	// Cancel state
 	if (CurrentAttackState) {
-		if (CurrentAttackState->CancelTime > 0.0f
-			&& StateTime > CurrentAttackState->CancelTime
+		if (CurrentAttackState->CancelFrame > 0.0f
+			&& CurrentFrame > CurrentAttackState->CancelFrame
 			&& (MovementInput < 0.0f
 				|| MovementInput > 0.0f
+				|| CrouchInput > 0.0f
 				|| JumpInputTime > 0.0f
 				|| EvadeInputTime > 0.0f
 				|| NormalInputTime > 0.0f
 				|| SpecialInputTime > 0.0f))
 		{
 			if (bTouchedGround)
-				CurrentState = GroundNeutral;
+				if (CrouchInput > 0.0f)
+					CurrentState = GroundCrouching;
+				else
+					CurrentState = GroundNeutral;
 			else
 				CurrentState = AirNeutral;
 		}
 	}
 
+	// Landing
+	if ((CurrentState->bIsAir)
+		&& bTouchedGround
+		&& GroundNeutral)
+	{
+		EnterState(GroundNeutral, EVelocityType::ADD);
+		return;
+	}
 	// Attacking (Normal)
 	if (NormalInputTime > 0.0f
 		&& CurrentState->AttackNormal)
@@ -195,7 +207,7 @@ void AFighterPawn::Tick(float DeltaTime)
 		return;
 	}
 	// Jumping
-	else if ((CurrentState == GroundNeutral
+	if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& bTouchedGround
@@ -206,18 +218,8 @@ void AFighterPawn::Tick(float DeltaTime)
 		EnterState(AirNeutral, EVelocityType::ADD);
 		return;
 	}
-	// Landing
-	else if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward
-		|| CurrentState == AirCrouching)
-		&& bTouchedGround
-		&& GroundNeutral)
-	{
-		EnterState(GroundNeutral, EVelocityType::ADD);
-		return;
-	}
 	// Crouching (Ground)
-	else if ((CurrentState == GroundNeutral
+	if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& CrouchInput > 0.0f
@@ -284,9 +286,9 @@ void AFighterPawn::Tick(float DeltaTime)
 		return;
 	}
 	// Ending
-	if (CurrentState->Duration > 0.0f
-		&& StateTime >= CurrentState->Duration
-		&& CurrentState->End)
+	if (CurrentAttackState
+		&& CurrentFrame >= CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames
+		&& CurrentAttackState->End)
 	{
 		EnterState(CurrentState->End, EVelocityType::IGNORE);
 		return;
@@ -451,12 +453,15 @@ bool AFighterPawn::GetIsFacingRight()
 
 UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
+	// Current state is not an attack
 	if (!CurrentState->GetIsAttack()) {
 		return CurrentState->AnimationLoop;
 	}
-	else if (StateTime < CurrentAttackState->ActiveStartTime) {
+	// Current attack state is leading in
+	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
 		return CurrentAttackState->AnimationLead;
 	}
+	// Current attack state is following through
 	else {
 		return CurrentAttackState->AnimationFollow;
 	}
@@ -464,14 +469,19 @@ UAnimSequence* AFighterPawn::GetAnimationSequence()
 
 float AFighterPawn::GetAnimationPlayRate()
 {
+	// Current state is not an attack
 	if (!CurrentState->GetIsAttack()) {
 		return 1.0f;
 	}
-	else if (StateTime < CurrentAttackState->ActiveStartTime) {
-		return 1.0f / (CurrentAttackState->ActiveStartTime);
+	// Current attack state is leading in
+	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Lead-in"));
+		return 60.0f / (float)(CurrentAttackState->StartupFrames);
 	}
+	// Current attack state is following through
 	else {
-		return 1.0f / (CurrentAttackState->Duration - CurrentAttackState->ActiveStartTime);
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Follow-through"));
+		return 60.0f / (float)(CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames);
 	}
 }
 
