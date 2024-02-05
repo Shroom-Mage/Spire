@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -24,12 +25,6 @@ AFighterPawn::AFighterPawn()
 	BodyBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyBox"));
 	BodyBox->SetupAttachment(Base);
 	BodyBox->ShapeColor = FColor(0, 0, 255, 255);
-
-	AttackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackBox"));
-	AttackBox->SetupAttachment(Base);
-	AttackBox->ShapeColor = FColor(255, 0, 0, 255);
-	AttackBox->OnComponentBeginOverlap.AddDynamic(this, &AFighterPawn::OnAttackOverlapBegin);
-	AttackBox->OnComponentEndOverlap.AddDynamic(this, &AFighterPawn::OnAttackOverlapEnd);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(Base);
@@ -94,11 +89,6 @@ void AFighterPawn::EnterAttackState(UFighterAttackStateAsset* AttackState, EVelo
 	UFighterStateAsset* PreviousState = CurrentState;
 	CurrentAttackState = AttackState;
 
-	// Adjust attack box
-	FVector AttackBoxLocation = FVector(AttackState->AttackBoxLocation.X, 0.0f, AttackState->AttackBoxLocation.Y);
-	FVector AttackBoxExtent = FVector(AttackState->AttackBoxExtent.X, 0.0f, AttackState->AttackBoxExtent.Y);
-	AttackBox->SetRelativeLocation(AttackBoxLocation);
-	AttackBox->SetBoxExtent(AttackBoxExtent);
 	bHasAttackHit = false;
 
 	EnterState(AttackState, VelocityType, bSplit);
@@ -123,18 +113,45 @@ void AFighterPawn::Tick(float DeltaTime)
 
 	// Set attack activity
 	if (CurrentAttackState) {
-		if (CurrentFrame > CurrentAttackState->StartupFrames && CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames && !bHasAttackHit) {
+		if (CurrentFrame >= CurrentAttackState->StartupFrames && CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames && !bHasAttackHit) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttackState->StartupFrames));
+			
+			// Get hit location and, if necessary, AttackStartLocation
+			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttackState->SocketName);
+			if (!bIsAttackActive)
+				AttackStartLocation = HitLocation;
+			
+			// Mark that the attack has begun
 			bIsAttackActive = true;
-			AttackBox->ShapeColor.A = 255;
+
+			// Check hit
+			FHitResult Hit;
+			bHasAttackHit = UKismetSystemLibrary::SphereTraceSingleByProfile(
+				GetWorld(),
+				AttackStartLocation,
+				HitLocation,
+				CurrentAttackState->Radius,
+				"FighterAttack",
+				false,
+				TArray<AActor*>(),
+				EDrawDebugTrace::ForDuration,
+				Hit,
+				true,
+				FLinearColor::Red,
+				FLinearColor::Green,
+				0.25f
+			);
+
 			// Check for opponent and hit
-			if (Target) {
-				bHasAttackHit = true;
-				Target->TakeHit(this, 1.0f);
+			if (bHasAttackHit) {
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HIT")));
+				Target = Cast<AFighterPawn>(Hit.GetActor());
+				if (Target)
+					Target->TakeHit(this, 1.0f);
 			}
 		}
 		else {
 			bIsAttackActive = false;
-			AttackBox->ShapeColor.A = 0;
 		}
 	}
 

@@ -8,6 +8,10 @@
 AFightingGameMode::AFightingGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	Fighters = { nullptr, nullptr };
+	Score = { 0, 0 };
+	StartingPositions = { -200.0, 200.0 };
 }
 
 void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipient)
@@ -17,10 +21,10 @@ void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipi
 	if (Attacker->Owner == Recipient || Recipient->Owner == Attacker)
 		return;
 
-	if (Recipient == Fighter0)
-		Score1++;
-	else if (Recipient == Fighter1)
-		Score0++;
+	if (Recipient == Fighters[0])
+		Score[1]++;
+	else if (Recipient == Fighters[1])
+		Score[0]++;
 	else
 		return;
 
@@ -36,13 +40,13 @@ void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipi
 
 void AFightingGameMode::ResetPositions()
 {
-	if (Fighter0) {
-		Fighter0->SetActorLocation(FVector(StartingPosition0, 0.0, 0.0));
-		Fighter0->FaceDirection(true);
+	if (Fighters[0]) {
+		Fighters[0]->SetActorLocation(FVector(StartingPositions[0], 0.0, 0.0));
+		Fighters[0]->FaceDirection(true);
 	}
-	if (Fighter1) {
-		Fighter1->SetActorLocation(FVector(StartingPosition1, 0.0, 0.0));
-		Fighter1->FaceDirection(false);
+	if (Fighters[1]) {
+		Fighters[1]->SetActorLocation(FVector(StartingPositions[1], 0.0, 0.0));
+		Fighters[1]->FaceDirection(false);
 	}
 }
 
@@ -52,8 +56,8 @@ void AFightingGameMode::BeginPlay()
 
 	UGameplayStatics::CreatePlayer(GetWorld(), -1);
 
-	Fighter0 = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	Fighter1 = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 1));
+	Fighters[0] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	Fighters[1] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 1));
 
 	BeginMatch();
 	BeginRound();
@@ -64,16 +68,16 @@ void AFightingGameMode::BeginMatch()
 {
 	OnBeginMatch();
 
-	Fighter0->BeginMatch();
-	Fighter1->BeginMatch();
+	Fighters[0]->BeginMatch();
+	Fighters[1]->BeginMatch();
 }
 
 void AFightingGameMode::BeginRound()
 {
 	OnBeginRound();
 
-	Fighter0->BeginRound();
-	Fighter1->BeginRound();
+	Fighters[0]->BeginRound();
+	Fighters[1]->BeginRound();
 }
 
 void AFightingGameMode::BeginPoint()
@@ -82,8 +86,8 @@ void AFightingGameMode::BeginPoint()
 
 	ResetPositions();
 
-	Fighter0->BeginPoint();
-	Fighter1->BeginPoint();
+	Fighters[0]->BeginPoint();
+	Fighters[1]->BeginPoint();
 }
 
 void AFightingGameMode::Tick(float DeltaTime)
@@ -113,15 +117,15 @@ void AFightingGameMode::Tick(float DeltaTime)
 
 int AFightingGameMode::GetScore(AFighterPawn* FightingComp)
 {
-	if (FightingComp == Fighter0)
-		return Score0;
-	else if (FightingComp == Fighter1)
-		return Score1;
+	if (FightingComp == Fighters[0])
+		return Score[0];
+	else if (FightingComp == Fighters[1])
+		return Score[1];
 
 	return 0;
 }
 
 int AFightingGameMode::GetRound()
 {
-	return FMath::Clamp(((Score0 + Score1) / 5) + 1, 0, 3);
+	return FMath::Clamp(((Score[0] + Score[1]) / 5) + 1, 0, 3);
 }

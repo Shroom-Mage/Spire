@@ -30,12 +30,12 @@ public:
 	// CancelFrame is the first frame (at 60f/s) that an attack will be canceled freely.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
 	int32 CancelFrame = 0;
-	// The location of the attack collider.
+	// The location of the attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D AttackBoxLocation;
-	// The extent of the attack collider.
+	FName SocketName;
+	// The radius of the attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D AttackBoxExtent;
+	float Radius;
 	// The animation to play when entering the state.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
 	UAnimSequence* AnimationLead;

@@ -57,23 +57,32 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
-	AFighterPawn* Fighter0;
+	TArray<AFighterPawn*> Fighters;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
-	AFighterPawn* Fighter1;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	//AFighterPawn* Fighter0;
 
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	//AFighterPawn* Fighter1;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
-	int Score0;
+	TArray<int> Score;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
-	int Score1;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	//int Score0;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	//int Score1;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
-	double StartingPosition0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
+	TArray<double> StartingPositions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
-	double StartingPosition1;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
+	//double StartingPosition0;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
+	//double StartingPosition1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMultiplier = 1.0f;

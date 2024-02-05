@@ -146,6 +146,7 @@ private:
 	bool bAnimationNeedsReset;
 
 	bool bIsFacingRight = true;
+	FVector AttackStartLocation;
 
 	float MovementInput = 0.0f;
 	float CrouchInput = 0.0f;
