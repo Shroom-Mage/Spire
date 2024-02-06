@@ -6,7 +6,7 @@
 #include "FighterStateAsset.h"
 #include "FighterAttackStateAsset.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -22,17 +22,95 @@ AFighterPawn::AFighterPawn()
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SkeletalMesh->SetupAttachment(Base);
 
-	BodyBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyBox"));
-	BodyBox->SetupAttachment(Base);
-	BodyBox->ShapeColor = FColor(0, 0, 255, 255);
+	// Hips
+	HipsCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HipsCapsule"));
+	HipsCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("hips"));
+	HipsCapsule->SetRelativeLocationAndRotation(FVector(0.3, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	HipsCapsule->SetCapsuleRadius(0.15f);
+	HipsCapsule->SetCapsuleHalfHeight(0.3f);
+	HipsCapsule->SetCollisionProfileName(FName("FighterBody"));
+	HipsCapsule->ShapeColor = FColor(0, 0, 255, 255);
 
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(Base);
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-	SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
+	// Head
+	HeadCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HeadCapsule"));
+	HeadCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
+	HeadCapsule->SetRelativeLocationAndRotation(FVector(0.1, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	HeadCapsule->SetCapsuleRadius(0.125f);
+	HeadCapsule->SetCapsuleHalfHeight(0.125f);
+	HeadCapsule->SetCollisionProfileName(FName("FighterBody"));
+	HeadCapsule->ShapeColor = FColor(0, 0, 255, 255);
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm);
+	// Upper Arm L
+	UpperArmLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("UpperArmLCapsule"));
+	UpperArmLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_L"));
+	UpperArmLCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	UpperArmLCapsule->SetCapsuleRadius(0.05f);
+	UpperArmLCapsule->SetCapsuleHalfHeight(0.2f);
+	UpperArmLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	UpperArmLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Upper Arm R
+	UpperArmRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("UpperArmRCapsule"));
+	UpperArmRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_R"));
+	UpperArmRCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	UpperArmRCapsule->SetCapsuleRadius(0.05f);
+	UpperArmRCapsule->SetCapsuleHalfHeight(0.2f);
+	UpperArmRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	UpperArmRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Forearm L
+	ForearmLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ForearmLCapsule"));
+	ForearmLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_L"));
+	ForearmLCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ForearmLCapsule->SetCapsuleRadius(0.05f);
+	ForearmLCapsule->SetCapsuleHalfHeight(0.2f);
+	ForearmLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ForearmLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Forearm R
+	ForearmRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ForearmRCapsule"));
+	ForearmRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_R"));
+	ForearmRCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ForearmRCapsule->SetCapsuleRadius(0.05f);
+	ForearmRCapsule->SetCapsuleHalfHeight(0.2f);
+	ForearmRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ForearmRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Thigh L
+	ThighLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ThighLCapsule"));
+	ThighLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_L"));
+	ThighLCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ThighLCapsule->SetCapsuleRadius(0.1f);
+	ThighLCapsule->SetCapsuleHalfHeight(0.3f);
+	ThighLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ThighLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Thigh R
+	ThighRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ThighRCapsule"));
+	ThighRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_R"));
+	ThighRCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ThighRCapsule->SetCapsuleRadius(0.1f);
+	ThighRCapsule->SetCapsuleHalfHeight(0.3f);
+	ThighRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ThighRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Shin L
+	ShinLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShinLCapsule"));
+	ShinLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_L"));
+	ShinLCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ShinLCapsule->SetCapsuleRadius(0.075f);
+	ShinLCapsule->SetCapsuleHalfHeight(0.2f);
+	ShinLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ShinLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Shin R
+	ShinRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShinRCapsule"));
+	ShinRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_R"));
+	ShinRCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ShinRCapsule->SetCapsuleRadius(0.075f);
+	ShinRCapsule->SetCapsuleHalfHeight(0.2f);
+	ShinRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ShinRCapsule->ShapeColor = FColor(0, 0, 255, 255);
 }
 
 // Called when the game starts or when spawned
@@ -53,12 +131,6 @@ void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityT
 	if (!CurrentState->GetIsAttack()) {
 		CurrentAttackState = nullptr;
 	}
-
-	// Adjust body box
-	FVector BodyBoxLocation = FVector(State->BodyBoxLocation.X, 0.0f, State->BodyBoxLocation.Y);
-	FVector BodyBoxExtent = FVector(State->BodyBoxExtent.X, 0.0f, State->BodyBoxExtent.Y);
-	BodyBox->SetRelativeLocation(BodyBoxLocation);
-	BodyBox->SetBoxExtent(BodyBoxExtent);
 
 	// Apply initial velocity
 	switch (VelocityType) {
@@ -133,7 +205,7 @@ void AFighterPawn::Tick(float DeltaTime)
 				CurrentAttackState->Radius,
 				"FighterAttack",
 				false,
-				TArray<AActor*>(),
+				{ this },
 				EDrawDebugTrace::ForDuration,
 				Hit,
 				true,
@@ -146,8 +218,8 @@ void AFighterPawn::Tick(float DeltaTime)
 			if (bHasAttackHit) {
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HIT")));
 				Target = Cast<AFighterPawn>(Hit.GetActor());
-				if (Target)
-					Target->TakeHit(this, 1.0f);
+				//if (Target)
+				//	Target->TakeHit(this, 1.0f);
 			}
 		}
 		else {
@@ -415,11 +487,9 @@ void AFighterPawn::TurnAround()
 
 	if (bIsFacingRight) {
 		SetActorRelativeRotation(FRotator(0.0, 0.0, 0.0));
-		SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
 	}
 	else {
 		SetActorRelativeRotation(FRotator(0.0, 180.0, 0.0));
-		SpringArm->SetRelativeRotation(FRotator(0.0, 90.0, 0.0));
 	}
 }
 

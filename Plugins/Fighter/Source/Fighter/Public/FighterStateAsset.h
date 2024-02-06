@@ -39,12 +39,6 @@ protected:
 	bool bIsAttack = false;
 
 public:
-	// The location of the body collider.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D BodyBoxLocation;
-	// The extent of the body collider.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D BodyBoxExtent;
 	// When a non-attack state is entered, AnimationLoop will play until the state ends.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
 	UAnimSequence* AnimationLoop;
