@@ -18,7 +18,7 @@ private:
 	void Disappear();
 
 protected:
-	virtual void EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit = false) override;
+	virtual void EnterState(UFighterState* State) override;
 
 public:
 	virtual void TakeHit(AFighterPawn* Attacker, float Damage) override;

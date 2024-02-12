@@ -3,8 +3,9 @@
 
 #include "FighterPawn.h"
 #include "FightingGameMode.h"
-#include "FighterStateAsset.h"
-#include "FighterAttackStateAsset.h"
+#include "FighterInnateAsset.h"
+#include "FighterState.h"
+#include "FighterAttackAsset.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -111,6 +112,14 @@ AFighterPawn::AFighterPawn()
 	ShinRCapsule->SetCapsuleHalfHeight(0.2f);
 	ShinRCapsule->SetCollisionProfileName(FName("FighterBody"));
 	ShinRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Core States
+	GroundNeutral = CreateDefaultSubobject<UFighterState>(TEXT("GroundNeutral"));
+	GroundForward = CreateDefaultSubobject<UFighterState>(TEXT("GroundForward"));
+	GroundCrouching = CreateDefaultSubobject<UFighterState>(TEXT("GroundCrouching"));
+	AirNeutral = CreateDefaultSubobject<UFighterState>(TEXT("AirNeutral"));
+	AirForward = CreateDefaultSubobject<UFighterState>(TEXT("AirForward"));
+	AirCrouching = CreateDefaultSubobject<UFighterState>(TEXT("AirCrouching"));
 }
 
 // Called when the game starts or when spawned
@@ -118,54 +127,55 @@ void AFighterPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
+	UWorld* World = GetWorld();
+	GameMode = Cast<AFightingGameMode>(World->GetAuthGameMode());
+
+	// Ground Neutral
+	GroundNeutral->Animation = InnateAsset->GroundNeutralAnimation;
+	GroundNeutral->Attack = InnateAsset->GroundNeutralAttack;
+
+	// Ground Forward
+	GroundForward->Animation = InnateAsset->GroundForwardAnimation;
+	GroundForward->Attack = InnateAsset->GroundForwardAttack;
+
+	// Ground Crouching
+	GroundCrouching->Animation = InnateAsset->GroundCrouchingAnimation;
+	GroundCrouching->Attack = InnateAsset->GroundCrouchingAttack;
+
+	// Air Neutral
+	AirNeutral->Animation = InnateAsset->AirNeutralAnimation;
+	AirNeutral->Attack = InnateAsset->AirNeutralAttack;
+
+	// Air Forward
+	AirForward->Animation = InnateAsset->AirForwardAnimation;
+	AirForward->Attack = InnateAsset->AirForwardAttack;
+
+	// Air Crouching
+	AirCrouching->Animation = InnateAsset->AirCrouchingAnimation;
+	AirCrouching->Attack = InnateAsset->AirCrouchingAttack;
+
+	// Set initial state
+	CurrentState = GroundNeutral;
 }
 
-void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
+void AFighterPawn::EnterState(UFighterState* State)
 {
-	if (State == CurrentState || State == nullptr)
+	CurrentState = State;
+}
+
+void AFighterPawn::EnterAttackState(UFighterAttackAsset* AttackState)
+{
+	if (AttackState == CurrentAttackState || AttackState == nullptr)
 		return;
 
-	UFighterStateAsset* PreviousState = CurrentState;
-	CurrentState = State;
-	if (!CurrentState->GetIsAttack()) {
-		CurrentAttackState = nullptr;
-	}
-
-	// Apply initial velocity
-	switch (VelocityType) {
-	case EVelocityType::ADD:
-		Velocity += State->VelocityInitial;
-		break;
-	case EVelocityType::REPLACE:
-		Velocity = State->VelocityInitial;
-		break;
-	default:
-		break;
-	}
-
-	// Reset time
-	if (!bSplit)
-		CurrentFrame = 0.0f;
-
-	// Gain resource
-	Resource = FMathf::Clamp(Resource + State->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
-	if (State->ResourceGain > 0.0f)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
-
-	OnEnterState(CurrentState, PreviousState);
-}
-
-void AFighterPawn::EnterAttackState(UFighterAttackStateAsset* AttackState, EVelocityType VelocityType, bool bSplit)
-{
-	UFighterStateAsset* PreviousState = CurrentState;
 	CurrentAttackState = AttackState;
 
 	bHasAttackHit = false;
 
-	EnterState(AttackState, VelocityType, bSplit);
-
-	OnEnterAttackState(CurrentAttackState, PreviousState);
+	// Gain resource
+	Resource = FMathf::Clamp(Resource + AttackState->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
+	if (AttackState->ResourceGain > 0.0f)
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
 
 // Called every frame
@@ -227,98 +237,100 @@ void AFighterPawn::Tick(float DeltaTime)
 		}
 	}
 
-	// Approach target velocity
-	if (Velocity.X <= CurrentState->VelocityTarget.X - CurrentState->Acceleration.X * DeltaTime) {
-		Velocity.X += CurrentState->Acceleration.X * DeltaTime;
-	}
-	else if (Velocity.X >= CurrentState->VelocityTarget.X + CurrentState->Deceleration.X * DeltaTime) {
-		Velocity.X -= CurrentState->Deceleration.X * DeltaTime;
-	}
-	else {
-		Velocity.X = CurrentState->VelocityTarget.X;
-	}
-	if (Velocity.Y <= CurrentState->VelocityTarget.Y - CurrentState->Acceleration.Y * DeltaTime) {
-		Velocity.Y += CurrentState->Acceleration.Y * DeltaTime;
-	}
-	else if (Velocity.Y >= CurrentState->VelocityTarget.Y + CurrentState->Deceleration.Y * DeltaTime) {
-		Velocity.Y -= CurrentState->Deceleration.Y * DeltaTime;
+	// Find movement properties
+	FVector Location = GetActorLocation();
+	bool bIsTouchingGround = Location.Z <= 0.0f;
+	bool bTouchedGroundThisFrame = false;
+	FVector2D VelocityTarget;
+	FVector2D Acceleration;
+	FVector2D Deceleration;
+
+	// Calculate momentum
+	if (bIsTouchingGround) {
+		VelocityTarget = { MovementInput * InnateAsset->GroundSpeed, 0.0 };
+		Acceleration = { InnateAsset->GroundAcceleration, 0.0 };
+		Deceleration = { InnateAsset->GroundDeceleration, 0.0 };
 	}
 	else {
-		Velocity.Y = CurrentState->VelocityTarget.Y;
+		VelocityTarget = { MovementInput * InnateAsset->AirSpeed, InnateAsset->FallVelocity };
+		Acceleration = { InnateAsset->AirAcceleration, 0.0 };
+		Deceleration = { InnateAsset->AirDeceleration, Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown };
 	}
 
-	// Translate
-	FVector Location = GetActorLocation();
+	// Calculate horizontal velocity
+	if (Velocity.X <= VelocityTarget.X - Acceleration.X * DeltaTime) {
+		Velocity.X += Acceleration.X * DeltaTime;
+	}
+	else if (Velocity.X >= VelocityTarget.X + Deceleration.X * DeltaTime) {
+		Velocity.X -= Deceleration.X * DeltaTime;
+	}
+	else {
+		Velocity.X = VelocityTarget.X;
+	}
+
+	// Calculate vertical velocity
+	if (Velocity.Y <= VelocityTarget.Y - Acceleration.Y * DeltaTime) {
+		Velocity.Y += Acceleration.Y * DeltaTime;
+	}
+	else if (Velocity.Y >= VelocityTarget.Y + Deceleration.Y * DeltaTime) {
+		Velocity.Y -= Deceleration.Y * DeltaTime;
+	}
+	else {
+		Velocity.Y = VelocityTarget.Y;
+	}
+
+
+	// Calculate destination
 	FVector Destination = Location + FVector(Velocity.X * GetActorForwardVector().X, 0.0f, Velocity.Y);
-	bool bTouchedGround = Destination.Z <= 0.0;
-	if (bTouchedGround) {
+	if (!bIsTouchingGround && Destination.Z <= 0.0) {
+		bTouchedGroundThisFrame = true;
+	}
+	bIsTouchingGround = Destination.Z <= 0.0;
+	if (bIsTouchingGround) {
 		Destination.Z = 0.0;
 		Velocity.Y = 0.0;
 	}
+
+	// Translate
 	SetActorLocation(Destination);
 
-	// Cancel state
-	if (CurrentAttackState) {
-		if (CurrentAttackState->CancelFrame > 0.0f
-			&& CurrentFrame > CurrentAttackState->CancelFrame
-			&& (MovementInput < 0.0f
-				|| MovementInput > 0.0f
-				|| CrouchInput > 0.0f
-				|| JumpInputTime > 0.0f
-				|| EvadeInputTime > 0.0f
-				|| NormalInputTime > 0.0f
-				|| SpecialInputTime > 0.0f))
-		{
-			if (bTouchedGround)
-				if (CrouchInput > 0.0f)
-					CurrentState = GroundCrouching;
-				else
-					CurrentState = GroundNeutral;
-			else
-				CurrentState = AirNeutral;
-		}
-	}
-
 	// Landing
-	if ((CurrentState->bIsAir)
-		&& bTouchedGround
+	if (bTouchedGroundThisFrame
 		&& GroundNeutral)
 	{
-		EnterState(GroundNeutral, EVelocityType::ADD);
+		EnterState(GroundNeutral);
 		return;
 	}
 	// Attacking (Normal)
 	if (NormalInputTime > 0.0f
-		&& CurrentState->AttackNormal)
+		&& CurrentState->Attack)
 	{
 		NormalInputTime = 0.0f;
-		EnterAttackState(CurrentState->AttackNormal, EVelocityType::ADD);
-		return;
+		EnterAttackState(CurrentState->Attack);
 	}
 	// Jumping
-	if ((CurrentState == GroundNeutral
+	else if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
-		&& bTouchedGround
+		&& bIsTouchingGround
 		&& JumpInputTime > 0.0f
 		&& AirNeutral)
 	{
 		JumpInputTime = 0.0f;
-		EnterState(AirNeutral, EVelocityType::ADD);
-		return;
+		Velocity += { 0.0, InnateAsset->JumpVelocity };
+		EnterState(AirNeutral);
 	}
 	// Crouching (Ground)
-	if ((CurrentState == GroundNeutral
+	else if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& CrouchInput > 0.0f
 		&& GroundCrouching)
 	{
-		EnterState(GroundCrouching, EVelocityType::IGNORE);
-		return;
+		EnterState(GroundCrouching);
 	}
 	// Moving (Ground)
-	if ((CurrentState == GroundNeutral
+	else if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& MovementInput != 0.0f
@@ -328,31 +340,28 @@ void AFighterPawn::Tick(float DeltaTime)
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(GroundForward, EVelocityType::IGNORE);
-		return;
+		EnterState(GroundForward);
 	}
 	// Stopping (Ground)
-	if ((CurrentState == GroundNeutral
+	else if ((CurrentState == GroundNeutral
 		|| CurrentState == GroundForward
 		|| CurrentState == GroundCrouching)
 		&& MovementInput == 0.0f
 		&& GroundNeutral)
 	{
-		EnterState(GroundNeutral, EVelocityType::IGNORE);
-		return;
+		EnterState(GroundNeutral);
 	}
 	// Crouching (Air)
-	if ((CurrentState == AirNeutral
+	else if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward
 		|| CurrentState == AirCrouching)
 		&& CrouchInput> 0.0f
 		&& AirCrouching)
 	{
-		EnterState(AirCrouching, EVelocityType::IGNORE);
-		return;
+		EnterState(AirCrouching);
 	}
 	// Moving (Air)
-	if ((CurrentState == AirNeutral
+	else if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward)
 		&& MovementInput != 0.0f
 		&& CrouchInput == 0.0f
@@ -361,26 +370,23 @@ void AFighterPawn::Tick(float DeltaTime)
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(AirForward, EVelocityType::IGNORE);
-		return;
+		EnterState(AirForward);
 	}
 	// Stopping (Air)
-	if ((CurrentState == AirNeutral
+	else if ((CurrentState == AirNeutral
 		|| CurrentState == AirForward
 		|| CurrentState == AirCrouching)
 		&& MovementInput == 0.0f
 		&& AirNeutral)
 	{
-		EnterState(AirNeutral, EVelocityType::IGNORE);
-		return;
+		EnterState(AirNeutral);
 	}
 	// Ending
-	if (CurrentAttackState
+	else if (CurrentAttackState
 		&& CurrentFrame >= CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames
 		&& CurrentAttackState->End)
 	{
-		EnterState(CurrentState->End, EVelocityType::IGNORE);
-		return;
+		EnterState(CurrentAttackState->End);
 	}
 }
 
@@ -469,14 +475,14 @@ void AFighterPawn::HardCancel()
 
 	Resource--;
 	FVector2D CanceledVelocity = Velocity;
-	UFighterStateAsset* CanceledState = CurrentState;
+	UFighterAttackAsset* CanceledAttack = CurrentAttackState;
 
 	ResetToNeutral();
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 
-	if (CanceledState)
-		OnHardCancel(CanceledState, CanceledVelocity);
+	if (CanceledAttack)
+		OnHardCancel(CanceledAttack, CanceledVelocity);
 }
 
 void AFighterPawn::TurnAround()
@@ -500,10 +506,10 @@ void AFighterPawn::ResetToNeutral()
 
 	Velocity = { 0.0f, 0.0f };
 	if (bTouchingGround) {
-		EnterState(GroundNeutral, EVelocityType::IGNORE, true);
+		EnterState(GroundNeutral);
 	}
 	else {
-		EnterState(AirNeutral, EVelocityType::IGNORE, true);
+		EnterState(AirNeutral);
 	}
 }
 
@@ -541,8 +547,8 @@ bool AFighterPawn::GetIsFacingRight()
 UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
 	// Current state is not an attack
-	if (!CurrentState->GetIsAttack()) {
-		return CurrentState->AnimationLoop;
+	if (!CurrentAttackState) {
+		return CurrentState->Animation;
 	}
 	// Current attack state is leading in
 	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
@@ -557,7 +563,7 @@ UAnimSequence* AFighterPawn::GetAnimationSequence()
 float AFighterPawn::GetAnimationPlayRate()
 {
 	// Current state is not an attack
-	if (!CurrentState->GetIsAttack()) {
+	if (!CurrentAttackState) {
 		return 1.0f;
 	}
 	// Current attack state is leading in
@@ -569,15 +575,5 @@ float AFighterPawn::GetAnimationPlayRate()
 	else {
 		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Follow-through"));
 		return 60.0f / (float)(CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames);
-	}
-}
-
-bool AFighterPawn::GetLoopAnimation()
-{
-	if (!CurrentState->GetIsAttack()) {
-		return CurrentState->bLoopAnimation;
-	}
-	else {
-		return false;
 	}
 }
