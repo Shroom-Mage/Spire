@@ -11,7 +11,7 @@ class UFighterAttackAsset;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class FIGHTER_API UFighterInnateAsset : public UDataAsset
 {
 	GENERATED_BODY()

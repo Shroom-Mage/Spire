@@ -167,7 +167,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
 	EFighterState CurrentState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	UFighterAttackAsset* CurrentAttackState;
+	UFighterAttackAsset* CurrentAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Status", meta=(AllowPrivateAccess="true"))
 	float CurrentFrame = 0.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))

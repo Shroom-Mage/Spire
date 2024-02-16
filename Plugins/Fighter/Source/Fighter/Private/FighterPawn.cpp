@@ -182,19 +182,19 @@ void AFighterPawn::EnterState(EFighterState State)
 	OnEnterState(State, CurrentState);
 
 	// Shift
-	if (CurrentAttackState) {
+	if (CurrentAttack) {
 		FVector Location = GetActorLocation();
 		FVector Destination =
 			Location
 			+ FVector(
-				CurrentAttackState->ShiftEnd.X * GetActorForwardVector().X,
+				CurrentAttack->ShiftEnd.X * GetActorForwardVector().X,
 				0.0f,
-				CurrentAttackState->ShiftEnd.Y);
+				CurrentAttack->ShiftEnd.Y);
 		SetActorLocation(Destination);
 	}
 
 	CurrentState = State;
-	CurrentAttackState = nullptr;
+	CurrentAttack = nullptr;
 }
 
 void AFighterPawn::EnterNormalAttackState(EFighterState State)
@@ -222,13 +222,13 @@ void AFighterPawn::EnterNormalAttackState(EFighterState State)
 		break;
 	}
 
-	if (AttackState == CurrentAttackState)
+	if (AttackState == CurrentAttack)
 		return;
 
 	OnEnterNormalAttackState(AttackState, CurrentState);
 
 	EnterState(EFighterState::Attack);
-	CurrentAttackState = AttackState;
+	CurrentAttack = AttackState;
 
 	bHasAttackHit = false;
 
@@ -267,18 +267,18 @@ void AFighterPawn::Tick(float DeltaTime)
 	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
-	if (CurrentAttackState) {
-		if (CurrentFrame >= CurrentAttackState->StartupFrames
-			&& CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames
+	if (CurrentAttack) {
+		if (CurrentFrame >= CurrentAttack->StartupFrames
+			&& CurrentFrame < CurrentAttack->StartupFrames + CurrentAttack->ActiveFrames
 			&& !bHasAttackHit) {
 			GEngine->AddOnScreenDebugMessage(
 				-1,
 				5.0f,
 				FColor::Purple,
-				FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttackState->StartupFrames));
+				FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttack->StartupFrames));
 			
 			// Get hit location and, if necessary, AttackStartLocation
-			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttackState->SocketName);
+			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttack->SocketName);
 			if (!bIsAttackActive)
 				AttackStartLocation = HitLocation;
 			
@@ -291,7 +291,7 @@ void AFighterPawn::Tick(float DeltaTime)
 				GetWorld(),
 				AttackStartLocation,
 				HitLocation,
-				CurrentAttackState->Radius,
+				CurrentAttack->Radius,
 				"FighterAttack",
 				false,
 				{ this },
@@ -451,12 +451,12 @@ void AFighterPawn::Tick(float DeltaTime)
 		EnterState(EFighterState::AirNeutral);
 	}
 	// Ending
-	else if (CurrentAttackState
-		&& CurrentFrame >= CurrentAttackState->StartupFrames
-			+ CurrentAttackState->ActiveFrames
-			+ CurrentAttackState->RecoveryFrames)
+	else if (CurrentAttack
+		&& CurrentFrame >= CurrentAttack->StartupFrames
+			+ CurrentAttack->ActiveFrames
+			+ CurrentAttack->RecoveryFrames)
 	{
-		EnterState(CurrentAttackState->End);
+		EnterState(CurrentAttack->End);
 	}
 }
 
@@ -525,7 +525,7 @@ void AFighterPawn::HardCancel()
 
 	Resource--;
 	FVector2D CanceledVelocity = Velocity;
-	UFighterAttackAsset* CanceledAttack = CurrentAttackState;
+	UFighterAttackAsset* CanceledAttack = CurrentAttack;
 
 	ResetToNeutral();
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
@@ -597,33 +597,33 @@ bool AFighterPawn::GetIsFacingRight()
 UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
 	// Current state is not an attack
-	if (!CurrentAttackState) {
+	if (!CurrentAttack) {
 		return nullptr;
 	}
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
-		return CurrentAttackState->AnimationLead;
+	else if (CurrentFrame < CurrentAttack->StartupFrames) {
+		return CurrentAttack->AnimationLead;
 	}
 	// Current attack state is following through
 	else {
-		return CurrentAttackState->AnimationFollow;
+		return CurrentAttack->AnimationFollow;
 	}
 }
 
 float AFighterPawn::GetAnimationPlayRate()
 {
 	// Current state is not an attack
-	if (!CurrentAttackState) {
+	if (!CurrentAttack) {
 		return 1.0f;
 	}
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
+	else if (CurrentFrame < CurrentAttack->StartupFrames) {
 		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Lead-in"));
-		return 60.0f / (float)(CurrentAttackState->StartupFrames);
+		return 60.0f / (float)(CurrentAttack->StartupFrames);
 	}
 	// Current attack state is following through
 	else {
 		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Follow-through"));
-		return 60.0f / (float)(CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames);
+		return 60.0f / (float)(CurrentAttack->ActiveFrames + CurrentAttack->RecoveryFrames);
 	}
 }
