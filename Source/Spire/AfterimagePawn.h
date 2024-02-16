@@ -18,7 +18,7 @@ private:
 	void Disappear();
 
 protected:
-	virtual void EnterState(UFighterState* State) override;
+	virtual void EnterState(EFighterState State) override;
 
 public:
 	virtual void TakeHit(AFighterPawn* Attacker, float Damage) override;

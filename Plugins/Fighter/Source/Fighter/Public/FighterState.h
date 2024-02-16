@@ -2,25 +2,19 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "FighterState.generated.h"
 
-class UFighterAttackAsset;
-
-/**
- * 
- */
-UCLASS()
-class FIGHTER_API UFighterState : public UObject
+UENUM(BlueprintType)
+enum class EFighterState : uint8
 {
-	GENERATED_BODY()
-
-public:
-	// When the fighter enters this state, Animationwill play until the state ends.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
-	UAnimSequence* Animation;
-	// When the attack button is pressed, the fighter will enter this state.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack")
-	UFighterAttackAsset* Attack;
+	GroundNeutral,
+	GroundForward,
+	GroundCrouching,
+	AirNeutral,
+	AirForward,
+	AirCrouching,
+	EvadeNeutral,
+	EvadeForward,
+	EvadeCrouching,
+	Attack
 };

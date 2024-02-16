@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "FighterState.h"
 #include "FighterAttackAsset.generated.h"
-
-class UFighterState;
 
 /**
  * 
@@ -67,5 +66,5 @@ public:
 	FVector2D Deceleration;
 	// When CurrentFrame has reached the Duration, the fighter will enter this state.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chaining")
-	UFighterState* End;
+	EFighterState End;
 };

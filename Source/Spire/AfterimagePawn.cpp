@@ -9,7 +9,7 @@ void AAfterimagePawn::Disappear()
 	SetActorLocation(FVector(0.0, 4000.0, 0.0));
 }
 
-void AAfterimagePawn::EnterState(UFighterState* State)
+void AAfterimagePawn::EnterState(EFighterState State)
 {
 	//if (!State->GetIsAttack()) {
 	//	Disappear();

@@ -2,5 +2,4 @@
 
 
 #include "FighterState.h"
-#include "FighterAttackAsset.h"
 

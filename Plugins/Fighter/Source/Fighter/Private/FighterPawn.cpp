@@ -112,14 +112,6 @@ AFighterPawn::AFighterPawn()
 	ShinRCapsule->SetCapsuleHalfHeight(0.2f);
 	ShinRCapsule->SetCollisionProfileName(FName("FighterBody"));
 	ShinRCapsule->ShapeColor = FColor(0, 0, 255, 255);
-
-	// Core States
-	GroundNeutral = CreateDefaultSubobject<UFighterState>(TEXT("GroundNeutral"));
-	GroundForward = CreateDefaultSubobject<UFighterState>(TEXT("GroundForward"));
-	GroundCrouching = CreateDefaultSubobject<UFighterState>(TEXT("GroundCrouching"));
-	AirNeutral = CreateDefaultSubobject<UFighterState>(TEXT("AirNeutral"));
-	AirForward = CreateDefaultSubobject<UFighterState>(TEXT("AirForward"));
-	AirCrouching = CreateDefaultSubobject<UFighterState>(TEXT("AirCrouching"));
 }
 
 // Called when the game starts or when spawned
@@ -130,50 +122,134 @@ void AFighterPawn::BeginPlay()
 	UWorld* World = GetWorld();
 	GameMode = Cast<AFightingGameMode>(World->GetAuthGameMode());
 
-	// Ground Neutral
-	GroundNeutral->Animation = InnateAsset->GroundNeutralAnimation;
-	GroundNeutral->Attack = InnateAsset->GroundNeutralAttack;
-
-	// Ground Forward
-	GroundForward->Animation = InnateAsset->GroundForwardAnimation;
-	GroundForward->Attack = InnateAsset->GroundForwardAttack;
-
-	// Ground Crouching
-	GroundCrouching->Animation = InnateAsset->GroundCrouchingAnimation;
-	GroundCrouching->Attack = InnateAsset->GroundCrouchingAttack;
-
-	// Air Neutral
-	AirNeutral->Animation = InnateAsset->AirNeutralAnimation;
-	AirNeutral->Attack = InnateAsset->AirNeutralAttack;
-
-	// Air Forward
-	AirForward->Animation = InnateAsset->AirForwardAnimation;
-	AirForward->Attack = InnateAsset->AirForwardAttack;
-
-	// Air Crouching
-	AirCrouching->Animation = InnateAsset->AirCrouchingAnimation;
-	AirCrouching->Attack = InnateAsset->AirCrouchingAttack;
-
 	// Set initial state
-	CurrentState = GroundNeutral;
+	CurrentState = EFighterState::GroundNeutral;
+
+	if (!InnateAsset) {
+		UE_LOG(LogTemp, Error, TEXT("No InnateAsset was set."));
+		return;
+	}
+
+	//// Ground Neutral
+	//GroundNeutral = NewObject<UFighterState>();
+	//GroundNeutral->Animation = InnateGroundNeutralAnimation;
+	//GroundNeutral->Attack = NewObject<UFighterAttackState>();
+	//GroundNeutral->Attack->Asset = InnateGroundNeutralAttack;
+	//if (GroundNeutral->Attack->Asset) GroundNeutral->Attack->End = GroundNeutral;
+
+	//// Ground Forward
+	//GroundForward = NewObject<UFighterState>();
+	//GroundForward->Animation = InnateGroundForwardAnimation;
+	//GroundForward->Attack = NewObject<UFighterAttackState>();
+	//GroundForward->Attack->Asset = InnateGroundForwardAttack;
+	//if (GroundForward->Attack->Asset) GroundForward->Attack->End = GroundForward;
+
+	//// Ground Crouching
+	//GroundCrouching = NewObject<UFighterState>();
+	//GroundCrouching->Animation = InnateGroundCrouchingAnimation;
+	//GroundCrouching->Attack = NewObject<UFighterAttackState>();
+	//GroundCrouching->Attack->Asset = InnateGroundCrouchingAttack;
+	//if (GroundCrouching->Attack->Asset) GroundCrouching->Attack->End = GroundCrouching;
+
+	//// Air Neutral
+	//AirNeutral = NewObject<UFighterState>();
+	//AirNeutral->Animation = InnateAirNeutralAnimation;
+	//AirNeutral->Attack = NewObject<UFighterAttackState>();
+	//AirNeutral->Attack->Asset = InnateAirNeutralAttack;
+	//if (AirNeutral->Attack->Asset) AirNeutral->Attack->End = AirNeutral;
+
+	//// Air Forward
+	//AirForward = NewObject<UFighterState>();
+	//AirForward->Animation = InnateAirForwardAnimation;
+	//AirForward->Attack = NewObject<UFighterAttackState>();
+	//AirForward->Attack->Asset = InnateAirForwardAttack;
+	//if (AirForward->Attack->Asset) AirForward->Attack->End = AirForward;
+
+	//// Air Crouching
+	//AirCrouching = NewObject<UFighterState>();
+	//AirCrouching->Animation = InnateAirCrouchingAnimation;
+	//AirCrouching->Attack = NewObject<UFighterAttackState>();
+	//AirCrouching->Attack->Asset = InnateAirCrouchingAttack;
+	//if (AirCrouching->Attack->Asset) AirCrouching->Attack->End = AirCrouching;
 }
 
-void AFighterPawn::EnterState(UFighterState* State)
+void AFighterPawn::EnterState(EFighterState State)
 {
+	if (State == CurrentState) {
+		return;
+	}
+
+	OnEnterState(State, CurrentState);
+
+	// Shift
+	if (CurrentAttackState) {
+		FVector Location = GetActorLocation();
+		FVector Destination =
+			Location
+			+ FVector(
+				CurrentAttackState->ShiftEnd.X * GetActorForwardVector().X,
+				0.0f,
+				CurrentAttackState->ShiftEnd.Y);
+		SetActorLocation(Destination);
+	}
+
 	CurrentState = State;
+	CurrentAttackState = nullptr;
 }
 
-void AFighterPawn::EnterAttackState(UFighterAttackAsset* AttackState)
+void AFighterPawn::EnterNormalAttackState(EFighterState State)
 {
-	if (AttackState == CurrentAttackState || AttackState == nullptr)
+	UFighterAttackAsset* AttackState = nullptr;
+
+	switch (State) {
+	case EFighterState::GroundNeutral:
+		AttackState = InnateAsset->GroundNeutralAttack;
+		break;
+	case EFighterState::GroundForward:
+		AttackState = InnateAsset->GroundForwardAttack;
+		break;
+	case EFighterState::GroundCrouching:
+		AttackState = InnateAsset->GroundCrouchingAttack;
+		break;
+	case EFighterState::AirNeutral:
+		AttackState = InnateAsset->AirNeutralAttack;
+		break;
+	case EFighterState::AirForward:
+		AttackState = InnateAsset->AirForwardAttack;
+		break;
+	case EFighterState::AirCrouching:
+		AttackState = InnateAsset->AirCrouchingAttack;
+		break;
+	}
+
+	if (AttackState == CurrentAttackState)
 		return;
 
+	OnEnterNormalAttackState(AttackState, CurrentState);
+
+	EnterState(EFighterState::Attack);
 	CurrentAttackState = AttackState;
 
 	bHasAttackHit = false;
 
+	// Shift
+	FVector Location = GetActorLocation();
+	FVector Destination =
+		Location
+		+ FVector(
+			AttackState->ShiftStart.X * GetActorForwardVector().X,
+			0.0f,
+			AttackState->ShiftStart.Y);
+	SetActorLocation(Destination);
+
+	// Initial velocity
+
+
 	// Gain resource
-	Resource = FMathf::Clamp(Resource + AttackState->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
+	Resource = FMathf::Clamp(
+		Resource + AttackState->ResourceGain * GameMode->ResourceMultiplier,
+		0.0f,
+		ResourceMax);
 	if (AttackState->ResourceGain > 0.0f)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
@@ -182,9 +258,6 @@ void AFighterPawn::EnterAttackState(UFighterAttackAsset* AttackState)
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (!CurrentState)
-		return;
 
 	// Update timers
 	CurrentFrame += DeltaTime * 60.0f;
@@ -195,8 +268,14 @@ void AFighterPawn::Tick(float DeltaTime)
 
 	// Set attack activity
 	if (CurrentAttackState) {
-		if (CurrentFrame >= CurrentAttackState->StartupFrames && CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames && !bHasAttackHit) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttackState->StartupFrames));
+		if (CurrentFrame >= CurrentAttackState->StartupFrames
+			&& CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames
+			&& !bHasAttackHit) {
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.0f,
+				FColor::Purple,
+				FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttackState->StartupFrames));
 			
 			// Get hit location and, if necessary, AttackStartLocation
 			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttackState->SocketName);
@@ -227,7 +306,7 @@ void AFighterPawn::Tick(float DeltaTime)
 			// Check for opponent and hit
 			if (bHasAttackHit) {
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HIT")));
-				Target = Cast<AFighterPawn>(Hit.GetActor());
+				AFighterPawn* Target = Cast<AFighterPawn>(Hit.GetActor());
 				//if (Target)
 				//	Target->TakeHit(this, 1.0f);
 			}
@@ -295,96 +374,87 @@ void AFighterPawn::Tick(float DeltaTime)
 	SetActorLocation(Destination);
 
 	// Landing
-	if (bTouchedGroundThisFrame
-		&& GroundNeutral)
+	if (bTouchedGroundThisFrame)
 	{
-		EnterState(GroundNeutral);
-		return;
+		EnterState(EFighterState::GroundNeutral);
 	}
 	// Attacking (Normal)
-	if (NormalInputTime > 0.0f
-		&& CurrentState->Attack)
+	else if (NormalInputTime > 0.0f)
 	{
 		NormalInputTime = 0.0f;
-		EnterAttackState(CurrentState->Attack);
+		EnterNormalAttackState(CurrentState);
 	}
 	// Jumping
-	else if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
 		&& bIsTouchingGround
-		&& JumpInputTime > 0.0f
-		&& AirNeutral)
+		&& JumpInputTime > 0.0f)
 	{
 		JumpInputTime = 0.0f;
 		Velocity += { 0.0, InnateAsset->JumpVelocity };
-		EnterState(AirNeutral);
+		EnterState(EFighterState::AirNeutral);
 	}
 	// Crouching (Ground)
-	else if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
-		&& CrouchInput > 0.0f
-		&& GroundCrouching)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
+		&& CrouchInput > 0.0f)
 	{
-		EnterState(GroundCrouching);
+		EnterState(EFighterState::GroundCrouching);
 	}
 	// Moving (Ground)
-	else if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
 		&& MovementInput != 0.0f
-		&& CrouchInput == 0.0f
-		&& GroundForward)
+		&& CrouchInput == 0.0f)
 	{
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(GroundForward);
+		EnterState(EFighterState::GroundForward);
 	}
 	// Stopping (Ground)
-	else if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
-		&& MovementInput == 0.0f
-		&& GroundNeutral)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
+		&& MovementInput == 0.0f)
 	{
-		EnterState(GroundNeutral);
+		EnterState(EFighterState::GroundNeutral);
 	}
 	// Crouching (Air)
-	else if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward
-		|| CurrentState == AirCrouching)
-		&& CrouchInput> 0.0f
-		&& AirCrouching)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching)
+		&& CrouchInput> 0.0f)
 	{
-		EnterState(AirCrouching);
+		EnterState(EFighterState::AirCrouching);
 	}
 	// Moving (Air)
-	else if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward)
 		&& MovementInput != 0.0f
-		&& CrouchInput == 0.0f
-		&& AirForward)
+		&& CrouchInput == 0.0f)
 	{
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(AirForward);
+		EnterState(EFighterState::AirForward);
 	}
 	// Stopping (Air)
-	else if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward
-		|| CurrentState == AirCrouching)
-		&& MovementInput == 0.0f
-		&& AirNeutral)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching)
+		&& MovementInput == 0.0f)
 	{
-		EnterState(AirNeutral);
+		EnterState(EFighterState::AirNeutral);
 	}
 	// Ending
 	else if (CurrentAttackState
-		&& CurrentFrame >= CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames
-		&& CurrentAttackState->End)
+		&& CurrentFrame >= CurrentAttackState->StartupFrames
+			+ CurrentAttackState->ActiveFrames
+			+ CurrentAttackState->RecoveryFrames)
 	{
 		EnterState(CurrentAttackState->End);
 	}
@@ -409,26 +479,6 @@ void AFighterPawn::BeginPoint()
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void AFighterPawn::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapBegin from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-		if (OtherFighter != this)
-			Target = OtherFighter;
-	}
-}
-
-void AFighterPawn::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapEnd from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-		if (OtherFighter == Target)
-			Target = nullptr;
-	}
 }
 
 bool AFighterPawn::GetIsAttackActive()
@@ -506,10 +556,10 @@ void AFighterPawn::ResetToNeutral()
 
 	Velocity = { 0.0f, 0.0f };
 	if (bTouchingGround) {
-		EnterState(GroundNeutral);
+		EnterState(EFighterState::GroundNeutral);
 	}
 	else {
-		EnterState(AirNeutral);
+		EnterState(EFighterState::AirNeutral);
 	}
 }
 
@@ -548,7 +598,7 @@ UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
 	// Current state is not an attack
 	if (!CurrentAttackState) {
-		return CurrentState->Animation;
+		return nullptr;
 	}
 	// Current attack state is leading in
 	else if (CurrentFrame < CurrentAttackState->StartupFrames) {

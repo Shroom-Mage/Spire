@@ -12,9 +12,12 @@ class USpringArmComponent;
 class UCameraComponent;
 class UFighterInnateAsset;
 class UFighterState;
-class UFighterAttackAsset;
+class UFighterAttackState;
 class AFightingGameMode;
 
+/**
+ *
+ */
 UCLASS()
 class FIGHTER_API AFighterPawn : public APawn
 {
@@ -30,11 +33,17 @@ protected:
 
 	// Called to enter a new state. Entering the current state will do nothing.
 	UFUNCTION(BlueprintCallable)
-	virtual void EnterState(UFighterState* State);
+	virtual void EnterState(EFighterState State);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EnterState")
+	void OnEnterState(EFighterState StateEntered, EFighterState StatedExited);
 
 	// Called to enter a new state. Entering the current state will do nothing.
 	UFUNCTION(BlueprintCallable)
-	virtual void EnterAttackState(UFighterAttackAsset* AttackState);
+	virtual void EnterNormalAttackState(EFighterState State);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EnterAttackState")
+	void OnEnterNormalAttackState(UFighterAttackAsset* AttackAsset, EFighterState StatedExited);
 
 public:	
 	// Called every frame
@@ -60,12 +69,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	UFUNCTION()
-	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	bool GetIsAttackActive();
 
@@ -162,11 +165,9 @@ private:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
-	UFighterState* CurrentState;
+	EFighterState CurrentState;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
 	UFighterAttackAsset* CurrentAttackState;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
-	AFighterPawn* Target = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Status", meta=(AllowPrivateAccess="true"))
 	float CurrentFrame = 0.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Status", meta=(AllowPrivateAccess="true"))
@@ -190,22 +191,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterInnateAsset* InnateAsset;
 
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* GroundNeutral;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* GroundForward;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* GroundCrouching;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* AirNeutral;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* AirForward;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* AirCrouching;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* EvadeNeutral;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* EvadeForward;
-	UPROPERTY(BlueprintReadWrite, Category="Core States")
-	UFighterState* EvadeCrouching;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* GroundNeutral;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* GroundForward;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* GroundCrouching;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* AirNeutral;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* AirForward;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* AirCrouching;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* EvadeNeutral;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* EvadeForward;
+	//UPROPERTY(BlueprintReadWrite, Category="Core States")
+	//UFighterState* EvadeCrouching;
 };
