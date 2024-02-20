@@ -47,6 +47,9 @@ public:
 	// When descending and above FallVelocity, the fighter will decelerate at GravityDown per second.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	float GravityDown;
+	// When crouching in the air, gravity is multiplied by FastFall.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
+	float FastFall;
 
 	// When Passive Ground Neutral is entered, GroundNeutralAnimation will play until the state ends.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")

@@ -317,23 +317,50 @@ void AFighterPawn::Tick(float DeltaTime)
 	}
 
 	// Find movement properties
-	FVector Location = GetActorLocation();
-	bool bIsTouchingGround = Location.Z <= 0.0f;
-	bool bTouchedGroundThisFrame = false;
 	FVector2D VelocityTarget;
 	FVector2D Acceleration;
 	FVector2D Deceleration;
-
+	bool InGroundState = CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching;
+	bool InAirState = CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching;
+	bool InNeutralState = CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::AirNeutral;
+	bool InForwardState = CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::AirForward;
+	bool InCrouchingState = CurrentState == EFighterState::GroundCrouching
+		|| CurrentState == EFighterState::AirCrouching;
+	
 	// Calculate momentum
-	if (bIsTouchingGround) {
-		VelocityTarget = { MovementInput * InnateAsset->GroundSpeed, 0.0 };
-		Acceleration = { InnateAsset->GroundAcceleration, 0.0 };
-		Deceleration = { InnateAsset->GroundDeceleration, 0.0 };
+	if (InGroundState) {
+		VelocityTarget = {
+			InCrouchingState ? 0.0 : MovementInput * InnateAsset->GroundSpeed,
+			0.0
+		};
+		Acceleration = {
+			InnateAsset->GroundAcceleration,
+			0.0
+		};
+		Deceleration = {
+			InnateAsset->GroundDeceleration,
+			0.0
+		};
 	}
 	else {
-		VelocityTarget = { MovementInput * InnateAsset->AirSpeed, InnateAsset->FallVelocity };
-		Acceleration = { InnateAsset->AirAcceleration, 0.0 };
-		Deceleration = { InnateAsset->AirDeceleration, Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown };
+		VelocityTarget = {
+			InCrouchingState ? 0.0 : MovementInput * InnateAsset->AirSpeed,
+			InnateAsset->FallVelocity
+		};
+		Acceleration = {
+			InnateAsset->AirAcceleration,
+			0.0
+		};
+		Deceleration = {
+			InnateAsset->AirDeceleration,
+			(Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown) * (InCrouchingState ? InnateAsset->FastFall : 1.0)
+		};
 	}
 
 	// Calculate horizontal velocity
@@ -360,6 +387,9 @@ void AFighterPawn::Tick(float DeltaTime)
 
 
 	// Calculate destination
+	FVector Location = GetActorLocation();
+	bool bIsTouchingGround = Location.Z <= 0.0f;
+	bool bTouchedGroundThisFrame = false;
 	FVector Destination = Location + FVector(Velocity.X * GetActorForwardVector().X, 0.0f, Velocity.Y);
 	if (!bIsTouchingGround && Destination.Z <= 0.0) {
 		bTouchedGroundThisFrame = true;
