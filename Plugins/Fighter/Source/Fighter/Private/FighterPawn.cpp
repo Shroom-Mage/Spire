@@ -181,7 +181,7 @@ void AFighterPawn::EnterState(EFighterState State)
 
 	OnEnterState(State, CurrentState);
 
-	// Shift
+	// End Shift
 	if (CurrentAttack) {
 		FVector Location = GetActorLocation();
 		FVector Destination =
@@ -195,51 +195,51 @@ void AFighterPawn::EnterState(EFighterState State)
 
 	CurrentState = State;
 	CurrentAttack = nullptr;
+	CurrentFrame = 0.0f;
 }
 
 void AFighterPawn::EnterNormalAttackState(EFighterState State)
 {
-	UFighterAttackAsset* AttackState = nullptr;
+	UFighterAttackAsset* AttackAsset = nullptr;
 
 	switch (State) {
 	case EFighterState::GroundNeutral:
-		AttackState = InnateAsset->GroundNeutralAttack;
+		AttackAsset = InnateAsset->GroundNeutralAttack;
 		break;
 	case EFighterState::GroundForward:
-		AttackState = InnateAsset->GroundForwardAttack;
+		AttackAsset = InnateAsset->GroundForwardAttack;
 		break;
 	case EFighterState::GroundCrouching:
-		AttackState = InnateAsset->GroundCrouchingAttack;
+		AttackAsset = InnateAsset->GroundCrouchingAttack;
 		break;
 	case EFighterState::AirNeutral:
-		AttackState = InnateAsset->AirNeutralAttack;
+		AttackAsset = InnateAsset->AirNeutralAttack;
 		break;
 	case EFighterState::AirForward:
-		AttackState = InnateAsset->AirForwardAttack;
+		AttackAsset = InnateAsset->AirForwardAttack;
 		break;
 	case EFighterState::AirCrouching:
-		AttackState = InnateAsset->AirCrouchingAttack;
+		AttackAsset = InnateAsset->AirCrouchingAttack;
 		break;
+	default:
+		return;
 	}
 
-	if (AttackState == CurrentAttack)
-		return;
-
-	OnEnterNormalAttackState(AttackState, CurrentState);
+	OnEnterNormalAttackState(AttackAsset, CurrentState);
 
 	EnterState(EFighterState::Attack);
-	CurrentAttack = AttackState;
+	CurrentAttack = AttackAsset;
 
 	bHasAttackHit = false;
 
-	// Shift
+	// Start Shift
 	FVector Location = GetActorLocation();
 	FVector Destination =
 		Location
 		+ FVector(
-			AttackState->ShiftStart.X * GetActorForwardVector().X,
+			AttackAsset->ShiftStart.X * GetActorForwardVector().X,
 			0.0f,
-			AttackState->ShiftStart.Y);
+			AttackAsset->ShiftStart.Y);
 	SetActorLocation(Destination);
 
 	// Initial velocity
@@ -247,10 +247,10 @@ void AFighterPawn::EnterNormalAttackState(EFighterState State)
 
 	// Gain resource
 	Resource = FMathf::Clamp(
-		Resource + AttackState->ResourceGain * GameMode->ResourceMultiplier,
+		Resource + AttackAsset->ResourceGain * GameMode->ResourceMultiplier,
 		0.0f,
 		ResourceMax);
-	if (AttackState->ResourceGain > 0.0f)
+	if (AttackAsset->ResourceGain > 0.0f)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
 
@@ -267,7 +267,7 @@ void AFighterPawn::Tick(float DeltaTime)
 	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
-	if (CurrentAttack) {
+	if (CurrentState == EFighterState::Attack) {
 		if (CurrentFrame >= CurrentAttack->StartupFrames
 			&& CurrentFrame < CurrentAttack->StartupFrames + CurrentAttack->ActiveFrames
 			&& !bHasAttackHit) {
@@ -626,34 +626,42 @@ bool AFighterPawn::GetIsFacingRight()
 
 UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
-	// Current state is not an attack
-	if (!CurrentAttack) {
+	if (CurrentState != EFighterState::Attack) {
 		return nullptr;
 	}
+
+	UAnimSequence* AttackAnimation = nullptr;
+
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttack->StartupFrames) {
-		return CurrentAttack->AnimationLead;
+	if (CurrentFrame < CurrentAttack->StartupFrames) {
+		AttackAnimation = CurrentAttack->AnimationLead;
 	}
 	// Current attack state is following through
 	else {
-		return CurrentAttack->AnimationFollow;
+		AttackAnimation = CurrentAttack->AnimationFollow;
 	}
+
+	return AttackAnimation;
 }
 
 float AFighterPawn::GetAnimationPlayRate()
 {
-	// Current state is not an attack
-	if (!CurrentAttack) {
+	if (CurrentState != EFighterState::Attack) {
 		return 1.0f;
 	}
+
+	float PlayRate = 1.0f;
+
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttack->StartupFrames) {
-		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Lead-in"));
-		return 60.0f / (float)(CurrentAttack->StartupFrames);
+	if (CurrentFrame < CurrentAttack->StartupFrames) {
+		PlayRate = 60.0f / (float)(CurrentAttack->StartupFrames);
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, FString::Printf(TEXT("Lead-in: %f"), PlayRate));
 	}
 	// Current attack state is following through
 	else {
-		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Follow-through"));
-		return 60.0f / (float)(CurrentAttack->ActiveFrames + CurrentAttack->RecoveryFrames);
+		PlayRate = 60.0f / (float)(CurrentAttack->ActiveFrames + CurrentAttack->RecoveryFrames);
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, FString::Printf(TEXT("Follow-through: %f"), PlayRate));
 	}
+
+	return PlayRate;
 }
