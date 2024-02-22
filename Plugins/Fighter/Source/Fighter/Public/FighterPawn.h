@@ -35,14 +35,14 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void EnterState(EFighterState State);
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EnterState")
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
 	void OnEnterState(EFighterState StateEntered, EFighterState StatedExited);
 
 	// Called to enter a new state. Entering the current state will do nothing.
 	UFUNCTION(BlueprintCallable)
 	virtual void EnterNormalAttackState(EFighterState State);
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EnterAttackState")
+	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterAttackState")
 	void OnEnterNormalAttackState(UFighterAttackAsset* AttackAsset, EFighterState StatedExited);
 
 public:	

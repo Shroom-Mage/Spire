@@ -24,16 +24,16 @@ public:
 	UAnimSequence* AnimationFollow;
 	// The number of frames at 60f/s before attack box becomes active.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
-	int32 StartupFrames = 0;
+	uint8 StartupFrames = 0;
 	// The number of frames at 60f/s that the attack box is active.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
-	int32 ActiveFrames = 0;
+	uint8 ActiveFrames = 0;
 	// The number of frames at 60f/s after attack box is active.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
-	int32 RecoveryFrames = 0;
+	uint8 RecoveryFrames = 0;
 	// CancelFrame is the first frame (at 60f/s) that an attack will be canceled freely.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
-	int32 CancelFrame = 0;
+	uint8 CancelFrame = 0;
 	// The location of the attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
 	FName SocketName;
@@ -52,7 +52,7 @@ public:
 	// When exiting this state, ShiftEnd is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D ShiftEnd;
-	// When entering this state, VelocityInitial will be applied to the actor's Velocity.
+	// When entering this state, VelocityInitial will be added to the fighter's Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D VelocityInitial;
 	// The actor will accelerate or decelerate to reach VelocityTarget.

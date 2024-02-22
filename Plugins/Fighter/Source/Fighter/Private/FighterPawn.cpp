@@ -243,7 +243,7 @@ void AFighterPawn::EnterNormalAttackState(EFighterState State)
 	SetActorLocation(Destination);
 
 	// Initial velocity
-
+	Velocity += CurrentAttack->VelocityInitial;
 
 	// Gain resource
 	Resource = FMathf::Clamp(
@@ -332,35 +332,47 @@ void AFighterPawn::Tick(float DeltaTime)
 		|| CurrentState == EFighterState::AirForward;
 	bool InCrouchingState = CurrentState == EFighterState::GroundCrouching
 		|| CurrentState == EFighterState::AirCrouching;
-	
+	bool InAttack = CurrentState == EFighterState::Attack;
+
 	// Calculate momentum
-	if (InGroundState) {
-		VelocityTarget = {
-			InCrouchingState ? 0.0 : MovementInput * InnateAsset->GroundSpeed,
-			0.0
-		};
-		Acceleration = {
-			InnateAsset->GroundAcceleration,
-			0.0
-		};
-		Deceleration = {
-			InnateAsset->GroundDeceleration,
-			0.0
-		};
+	// Not attacking
+	if (!InAttack) {
+		// On the ground
+		if (InGroundState) {
+			VelocityTarget = {
+				InCrouchingState ? 0.0 : MovementInput * InnateAsset->GroundSpeed,
+				0.0
+			};
+			Acceleration = {
+				InnateAsset->GroundAcceleration,
+				0.0
+			};
+			Deceleration = {
+				InnateAsset->GroundDeceleration,
+				0.0
+			};
+		}
+		// In the air
+		else {
+			VelocityTarget = {
+				InCrouchingState ? 0.0 : MovementInput * InnateAsset->AirSpeed,
+				InnateAsset->FallVelocity
+			};
+			Acceleration = {
+				InnateAsset->AirAcceleration,
+				0.0
+			};
+			Deceleration = {
+				InnateAsset->AirDeceleration,
+				(Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown) * (InCrouchingState ? InnateAsset->FastFall : 1.0)
+			};
+		}
 	}
+	// Attacking
 	else {
-		VelocityTarget = {
-			InCrouchingState ? 0.0 : MovementInput * InnateAsset->AirSpeed,
-			InnateAsset->FallVelocity
-		};
-		Acceleration = {
-			InnateAsset->AirAcceleration,
-			0.0
-		};
-		Deceleration = {
-			InnateAsset->AirDeceleration,
-			(Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown) * (InCrouchingState ? InnateAsset->FastFall : 1.0)
-		};
+		VelocityTarget = CurrentAttack->VelocityTarget;
+		Acceleration = CurrentAttack->Acceleration;
+		Deceleration = CurrentAttack->Deceleration;
 	}
 
 	// Calculate horizontal velocity

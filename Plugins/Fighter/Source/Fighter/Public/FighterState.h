@@ -4,7 +4,7 @@
 
 #include "FighterState.generated.h"
 
-UENUM(BlueprintType)
+UENUM(BlueprintType, DisplayName="Fighter State")
 enum class EFighterState : uint8
 {
 	GroundNeutral,
