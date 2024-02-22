@@ -4,56 +4,42 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "FighterStateAsset.generated.h"
-
-
-UENUM()
-enum class EVelocityType : uint8
-{
-	IGNORE,
-	ADD,
-	REPLACE
-};
+#include "FighterState.h"
+#include "FighterAttackAsset.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FIGHTER_API UFighterStateAsset : public UDataAsset
+class FIGHTER_API UFighterAttackAsset : public UDataAsset
 {
 	GENERATED_BODY()
-
+	
 public:
-	UFighterStateAsset();
-
-public:
-	UFUNCTION(BlueprintCallable)
-	bool GetIsAttack() { return bIsAttack; }
-
-	UFUNCTION(BlueprintCallable)
-	bool GetIsAir() { return bIsAir; }
-
-protected:
-	// The state is regarded as an attack if bIsAttack is true.
-	UPROPERTY(VisibleAnywhere, Category="Attack", meta = (AllowPrivateAccess = "true"))
-	bool bIsAttack = false;
-
-public:
-	// The location of the body collider.
+	// The animation to play when entering the state.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
+	UAnimSequence* AnimationLead;
+	// The animation to play when entering the state.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
+	UAnimSequence* AnimationFollow;
+	// The number of frames at 60f/s before attack box becomes active.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
+	uint8 StartupFrames = 0;
+	// The number of frames at 60f/s that the attack box is active.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
+	uint8 ActiveFrames = 0;
+	// The number of frames at 60f/s after attack box is active.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
+	uint8 RecoveryFrames = 0;
+	// CancelFrame is the first frame (at 60f/s) that an attack will be canceled freely.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Timing")
+	uint8 CancelFrame = 0;
+	// The location of the attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D BodyBoxLocation;
-	// The extent of the body collider.
+	FName SocketName;
+	// The radius of the attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision")
-	FVector2D BodyBoxExtent;
-	// When a non-attack state is entered, AnimationLoop will play until the state ends.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
-	UAnimSequence* AnimationLoop;
-	// BlendTime is the amount of time in seconds to change from the previous animation to the new one.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
-	float BlendTime = 0.0f;
-	// Whether to repeat the animation while in the state.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation")
-	bool bLoopAnimation;
+	float Radius;
 	// When the state is entered, the fighter gains resource equal to ResourceGain.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Resource")
 	float ResourceGain = 0.0f;
@@ -66,7 +52,7 @@ public:
 	// When exiting this state, ShiftEnd is distance to translate irrespective of Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D ShiftEnd;
-	// When entering this state, VelocityInitial will be applied to the actor's Velocity.
+	// When entering this state, VelocityInitial will be added to the fighter's Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D VelocityInitial;
 	// The actor will accelerate or decelerate to reach VelocityTarget.
@@ -78,10 +64,7 @@ public:
 	// If the actor's Velocity is less than this state's VelocityTarget, Deceleration is subtracted from Velocity.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
 	FVector2D Deceleration;
-	// When the attack button is pressed, the fighter will enter this state.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chaining")
-	class UFighterAttackStateAsset* AttackNormal;
 	// When CurrentFrame has reached the Duration, the fighter will enter this state.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chaining")
-	UFighterStateAsset* End;
+	EFighterState End;
 };

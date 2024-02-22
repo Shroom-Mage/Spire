@@ -3,11 +3,13 @@
 
 #include "FighterPawn.h"
 #include "FightingGameMode.h"
-#include "FighterStateAsset.h"
-#include "FighterAttackStateAsset.h"
+#include "FighterInnateAsset.h"
+#include "FighterState.h"
+#include "FighterAttackAsset.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -21,23 +23,95 @@ AFighterPawn::AFighterPawn()
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SkeletalMesh->SetupAttachment(Base);
 
-	BodyBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BodyBox"));
-	BodyBox->SetupAttachment(Base);
-	BodyBox->ShapeColor = FColor(0, 0, 255, 255);
+	// Hips
+	HipsCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HipsCapsule"));
+	HipsCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("hips"));
+	HipsCapsule->SetRelativeLocationAndRotation(FVector(0.3, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	HipsCapsule->SetCapsuleRadius(0.15f);
+	HipsCapsule->SetCapsuleHalfHeight(0.3f);
+	HipsCapsule->SetCollisionProfileName(FName("FighterBody"));
+	HipsCapsule->ShapeColor = FColor(0, 0, 255, 255);
 
-	AttackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackBox"));
-	AttackBox->SetupAttachment(Base);
-	AttackBox->ShapeColor = FColor(255, 0, 0, 255);
-	AttackBox->OnComponentBeginOverlap.AddDynamic(this, &AFighterPawn::OnAttackOverlapBegin);
-	AttackBox->OnComponentEndOverlap.AddDynamic(this, &AFighterPawn::OnAttackOverlapEnd);
+	// Head
+	HeadCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HeadCapsule"));
+	HeadCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
+	HeadCapsule->SetRelativeLocationAndRotation(FVector(0.1, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	HeadCapsule->SetCapsuleRadius(0.125f);
+	HeadCapsule->SetCapsuleHalfHeight(0.125f);
+	HeadCapsule->SetCollisionProfileName(FName("FighterBody"));
+	HeadCapsule->ShapeColor = FColor(0, 0, 255, 255);
 
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(Base);
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-	SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
+	// Upper Arm L
+	UpperArmLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("UpperArmLCapsule"));
+	UpperArmLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_L"));
+	UpperArmLCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	UpperArmLCapsule->SetCapsuleRadius(0.05f);
+	UpperArmLCapsule->SetCapsuleHalfHeight(0.2f);
+	UpperArmLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	UpperArmLCapsule->ShapeColor = FColor(0, 0, 255, 255);
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm);
+	// Upper Arm R
+	UpperArmRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("UpperArmRCapsule"));
+	UpperArmRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_R"));
+	UpperArmRCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	UpperArmRCapsule->SetCapsuleRadius(0.05f);
+	UpperArmRCapsule->SetCapsuleHalfHeight(0.2f);
+	UpperArmRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	UpperArmRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Forearm L
+	ForearmLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ForearmLCapsule"));
+	ForearmLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_L"));
+	ForearmLCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ForearmLCapsule->SetCapsuleRadius(0.05f);
+	ForearmLCapsule->SetCapsuleHalfHeight(0.2f);
+	ForearmLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ForearmLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Forearm R
+	ForearmRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ForearmRCapsule"));
+	ForearmRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_R"));
+	ForearmRCapsule->SetRelativeLocationAndRotation(FVector(0.15, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ForearmRCapsule->SetCapsuleRadius(0.05f);
+	ForearmRCapsule->SetCapsuleHalfHeight(0.2f);
+	ForearmRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ForearmRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Thigh L
+	ThighLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ThighLCapsule"));
+	ThighLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_L"));
+	ThighLCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ThighLCapsule->SetCapsuleRadius(0.1f);
+	ThighLCapsule->SetCapsuleHalfHeight(0.3f);
+	ThighLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ThighLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Thigh R
+	ThighRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ThighRCapsule"));
+	ThighRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_R"));
+	ThighRCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ThighRCapsule->SetCapsuleRadius(0.1f);
+	ThighRCapsule->SetCapsuleHalfHeight(0.3f);
+	ThighRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ThighRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Shin L
+	ShinLCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShinLCapsule"));
+	ShinLCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_L"));
+	ShinLCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ShinLCapsule->SetCapsuleRadius(0.075f);
+	ShinLCapsule->SetCapsuleHalfHeight(0.2f);
+	ShinLCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ShinLCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	// Shin R
+	ShinRCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShinRCapsule"));
+	ShinRCapsule->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_R"));
+	ShinRCapsule->SetRelativeLocationAndRotation(FVector(0.2, 0.0, 0.0), FRotator(-90.0, 0.0, 0.0));
+	ShinRCapsule->SetCapsuleRadius(0.075f);
+	ShinRCapsule->SetCapsuleHalfHeight(0.2f);
+	ShinRCapsule->SetCollisionProfileName(FName("FighterBody"));
+	ShinRCapsule->ShapeColor = FColor(0, 0, 255, 255);
 }
 
 // Called when the game starts or when spawned
@@ -45,74 +119,145 @@ void AFighterPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameMode = Cast<AFightingGameMode>(GetWorld()->GetAuthGameMode());
-}
+	UWorld* World = GetWorld();
+	GameMode = Cast<AFightingGameMode>(World->GetAuthGameMode());
 
-void AFighterPawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
-{
-	if (State == CurrentState || State == nullptr)
+	// Set initial state
+	CurrentState = EFighterState::GroundNeutral;
+
+	if (!InnateAsset) {
+		UE_LOG(LogTemp, Error, TEXT("No InnateAsset was set."));
 		return;
-
-	UFighterStateAsset* PreviousState = CurrentState;
-	CurrentState = State;
-	if (!CurrentState->GetIsAttack()) {
-		CurrentAttackState = nullptr;
 	}
 
-	// Adjust body box
-	FVector BodyBoxLocation = FVector(State->BodyBoxLocation.X, 0.0f, State->BodyBoxLocation.Y);
-	FVector BodyBoxExtent = FVector(State->BodyBoxExtent.X, 0.0f, State->BodyBoxExtent.Y);
-	BodyBox->SetRelativeLocation(BodyBoxLocation);
-	BodyBox->SetBoxExtent(BodyBoxExtent);
+	//// Ground Neutral
+	//GroundNeutral = NewObject<UFighterState>();
+	//GroundNeutral->Animation = InnateGroundNeutralAnimation;
+	//GroundNeutral->Attack = NewObject<UFighterAttackState>();
+	//GroundNeutral->Attack->Asset = InnateGroundNeutralAttack;
+	//if (GroundNeutral->Attack->Asset) GroundNeutral->Attack->End = GroundNeutral;
 
-	// Apply initial velocity
-	switch (VelocityType) {
-	case EVelocityType::ADD:
-		Velocity += State->VelocityInitial;
+	//// Ground Forward
+	//GroundForward = NewObject<UFighterState>();
+	//GroundForward->Animation = InnateGroundForwardAnimation;
+	//GroundForward->Attack = NewObject<UFighterAttackState>();
+	//GroundForward->Attack->Asset = InnateGroundForwardAttack;
+	//if (GroundForward->Attack->Asset) GroundForward->Attack->End = GroundForward;
+
+	//// Ground Crouching
+	//GroundCrouching = NewObject<UFighterState>();
+	//GroundCrouching->Animation = InnateGroundCrouchingAnimation;
+	//GroundCrouching->Attack = NewObject<UFighterAttackState>();
+	//GroundCrouching->Attack->Asset = InnateGroundCrouchingAttack;
+	//if (GroundCrouching->Attack->Asset) GroundCrouching->Attack->End = GroundCrouching;
+
+	//// Air Neutral
+	//AirNeutral = NewObject<UFighterState>();
+	//AirNeutral->Animation = InnateAirNeutralAnimation;
+	//AirNeutral->Attack = NewObject<UFighterAttackState>();
+	//AirNeutral->Attack->Asset = InnateAirNeutralAttack;
+	//if (AirNeutral->Attack->Asset) AirNeutral->Attack->End = AirNeutral;
+
+	//// Air Forward
+	//AirForward = NewObject<UFighterState>();
+	//AirForward->Animation = InnateAirForwardAnimation;
+	//AirForward->Attack = NewObject<UFighterAttackState>();
+	//AirForward->Attack->Asset = InnateAirForwardAttack;
+	//if (AirForward->Attack->Asset) AirForward->Attack->End = AirForward;
+
+	//// Air Crouching
+	//AirCrouching = NewObject<UFighterState>();
+	//AirCrouching->Animation = InnateAirCrouchingAnimation;
+	//AirCrouching->Attack = NewObject<UFighterAttackState>();
+	//AirCrouching->Attack->Asset = InnateAirCrouchingAttack;
+	//if (AirCrouching->Attack->Asset) AirCrouching->Attack->End = AirCrouching;
+}
+
+void AFighterPawn::EnterState(EFighterState State)
+{
+	if (State == CurrentState) {
+		return;
+	}
+
+	OnEnterState(State, CurrentState);
+
+	// End Shift
+	if (CurrentAttack) {
+		FVector Location = GetActorLocation();
+		FVector Destination =
+			Location
+			+ FVector(
+				CurrentAttack->ShiftEnd.X * GetActorForwardVector().X,
+				0.0f,
+				CurrentAttack->ShiftEnd.Y);
+		SetActorLocation(Destination);
+	}
+
+	CurrentState = State;
+	CurrentAttack = nullptr;
+	CurrentFrame = 0.0f;
+}
+
+void AFighterPawn::EnterNormalAttackState(EFighterState State)
+{
+	UFighterAttackAsset* AttackAsset = nullptr;
+
+	switch (State) {
+	case EFighterState::GroundNeutral:
+		AttackAsset = InnateAsset->GroundNeutralAttack;
 		break;
-	case EVelocityType::REPLACE:
-		Velocity = State->VelocityInitial;
+	case EFighterState::GroundForward:
+		AttackAsset = InnateAsset->GroundForwardAttack;
+		break;
+	case EFighterState::GroundCrouching:
+		AttackAsset = InnateAsset->GroundCrouchingAttack;
+		break;
+	case EFighterState::AirNeutral:
+		AttackAsset = InnateAsset->AirNeutralAttack;
+		break;
+	case EFighterState::AirForward:
+		AttackAsset = InnateAsset->AirForwardAttack;
+		break;
+	case EFighterState::AirCrouching:
+		AttackAsset = InnateAsset->AirCrouchingAttack;
 		break;
 	default:
-		break;
+		return;
 	}
 
-	// Reset time
-	if (!bSplit)
-		CurrentFrame = 0.0f;
+	OnEnterNormalAttackState(AttackAsset, CurrentState);
 
-	// Gain resource
-	Resource = FMathf::Clamp(Resource + State->ResourceGain * GameMode->ResourceMultiplier, 0.0f, ResourceMax);
-	if (State->ResourceGain > 0.0f)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
+	EnterState(EFighterState::Attack);
+	CurrentAttack = AttackAsset;
 
-	OnEnterState(CurrentState, PreviousState);
-}
-
-void AFighterPawn::EnterAttackState(UFighterAttackStateAsset* AttackState, EVelocityType VelocityType, bool bSplit)
-{
-	UFighterStateAsset* PreviousState = CurrentState;
-	CurrentAttackState = AttackState;
-
-	// Adjust attack box
-	FVector AttackBoxLocation = FVector(AttackState->AttackBoxLocation.X, 0.0f, AttackState->AttackBoxLocation.Y);
-	FVector AttackBoxExtent = FVector(AttackState->AttackBoxExtent.X, 0.0f, AttackState->AttackBoxExtent.Y);
-	AttackBox->SetRelativeLocation(AttackBoxLocation);
-	AttackBox->SetBoxExtent(AttackBoxExtent);
 	bHasAttackHit = false;
 
-	EnterState(AttackState, VelocityType, bSplit);
+	// Start Shift
+	FVector Location = GetActorLocation();
+	FVector Destination =
+		Location
+		+ FVector(
+			AttackAsset->ShiftStart.X * GetActorForwardVector().X,
+			0.0f,
+			AttackAsset->ShiftStart.Y);
+	SetActorLocation(Destination);
 
-	OnEnterAttackState(CurrentAttackState, PreviousState);
+	// Initial velocity
+	Velocity += CurrentAttack->VelocityInitial;
+
+	// Gain resource
+	Resource = FMathf::Clamp(
+		Resource + AttackAsset->ResourceGain * GameMode->ResourceMultiplier,
+		0.0f,
+		ResourceMax);
+	if (AttackAsset->ResourceGain > 0.0f)
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 }
 
 // Called every frame
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (!CurrentState)
-		return;
 
 	// Update timers
 	CurrentFrame += DeltaTime * 60.0f;
@@ -122,176 +267,238 @@ void AFighterPawn::Tick(float DeltaTime)
 	SpecialInputTime -= DeltaTime;
 
 	// Set attack activity
-	if (CurrentAttackState) {
-		if (CurrentFrame > CurrentAttackState->StartupFrames && CurrentFrame < CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames && !bHasAttackHit) {
+	if (CurrentState == EFighterState::Attack) {
+		if (CurrentFrame >= CurrentAttack->StartupFrames
+			&& CurrentFrame < CurrentAttack->StartupFrames + CurrentAttack->ActiveFrames
+			&& !bHasAttackHit) {
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.0f,
+				FColor::Purple,
+				FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttack->StartupFrames));
+			
+			// Get hit location and, if necessary, AttackStartLocation
+			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttack->SocketName);
+			if (!bIsAttackActive)
+				AttackStartLocation = HitLocation;
+			
+			// Mark that the attack has begun
 			bIsAttackActive = true;
-			AttackBox->ShapeColor.A = 255;
+
+			// Check hit
+			FHitResult Hit;
+			bHasAttackHit = UKismetSystemLibrary::SphereTraceSingleByProfile(
+				GetWorld(),
+				AttackStartLocation,
+				HitLocation,
+				CurrentAttack->Radius,
+				"FighterAttack",
+				false,
+				{ this },
+				EDrawDebugTrace::ForDuration,
+				Hit,
+				true,
+				FLinearColor::Red,
+				FLinearColor::Green,
+				0.25f
+			);
+
 			// Check for opponent and hit
-			if (Target) {
-				bHasAttackHit = true;
-				Target->TakeHit(this, 1.0f);
+			if (bHasAttackHit) {
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HIT")));
+				AFighterPawn* Target = Cast<AFighterPawn>(Hit.GetActor());
+				//if (Target)
+				//	Target->TakeHit(this, 1.0f);
 			}
 		}
 		else {
 			bIsAttackActive = false;
-			AttackBox->ShapeColor.A = 0;
 		}
 	}
 
-	// Approach target velocity
-	if (Velocity.X <= CurrentState->VelocityTarget.X - CurrentState->Acceleration.X * DeltaTime) {
-		Velocity.X += CurrentState->Acceleration.X * DeltaTime;
+	// Find movement properties
+	FVector2D VelocityTarget;
+	FVector2D Acceleration;
+	FVector2D Deceleration;
+	bool InGroundState = CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching;
+	bool InAirState = CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching;
+	bool InNeutralState = CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::AirNeutral;
+	bool InForwardState = CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::AirForward;
+	bool InCrouchingState = CurrentState == EFighterState::GroundCrouching
+		|| CurrentState == EFighterState::AirCrouching;
+	bool InAttack = CurrentState == EFighterState::Attack;
+
+	// Calculate momentum
+	// Not attacking
+	if (!InAttack) {
+		// On the ground
+		if (InGroundState) {
+			VelocityTarget = {
+				InCrouchingState ? 0.0 : MovementInput * InnateAsset->GroundSpeed,
+				0.0
+			};
+			Acceleration = {
+				InnateAsset->GroundAcceleration,
+				0.0
+			};
+			Deceleration = {
+				InnateAsset->GroundDeceleration,
+				0.0
+			};
+		}
+		// In the air
+		else {
+			VelocityTarget = {
+				InCrouchingState ? 0.0 : MovementInput * InnateAsset->AirSpeed,
+				InnateAsset->FallVelocity
+			};
+			Acceleration = {
+				InnateAsset->AirAcceleration,
+				0.0
+			};
+			Deceleration = {
+				InnateAsset->AirDeceleration,
+				(Velocity.Y > 0.0 ? InnateAsset->GravityUp : InnateAsset->GravityDown) * (InCrouchingState ? InnateAsset->FastFall : 1.0)
+			};
+		}
 	}
-	else if (Velocity.X >= CurrentState->VelocityTarget.X + CurrentState->Deceleration.X * DeltaTime) {
-		Velocity.X -= CurrentState->Deceleration.X * DeltaTime;
-	}
+	// Attacking
 	else {
-		Velocity.X = CurrentState->VelocityTarget.X;
-	}
-	if (Velocity.Y <= CurrentState->VelocityTarget.Y - CurrentState->Acceleration.Y * DeltaTime) {
-		Velocity.Y += CurrentState->Acceleration.Y * DeltaTime;
-	}
-	else if (Velocity.Y >= CurrentState->VelocityTarget.Y + CurrentState->Deceleration.Y * DeltaTime) {
-		Velocity.Y -= CurrentState->Deceleration.Y * DeltaTime;
-	}
-	else {
-		Velocity.Y = CurrentState->VelocityTarget.Y;
+		VelocityTarget = CurrentAttack->VelocityTarget;
+		Acceleration = CurrentAttack->Acceleration;
+		Deceleration = CurrentAttack->Deceleration;
 	}
 
-	// Translate
+	// Calculate horizontal velocity
+	if (Velocity.X <= VelocityTarget.X - Acceleration.X * DeltaTime) {
+		Velocity.X += Acceleration.X * DeltaTime;
+	}
+	else if (Velocity.X >= VelocityTarget.X + Deceleration.X * DeltaTime) {
+		Velocity.X -= Deceleration.X * DeltaTime;
+	}
+	else {
+		Velocity.X = VelocityTarget.X;
+	}
+
+	// Calculate vertical velocity
+	if (Velocity.Y <= VelocityTarget.Y - Acceleration.Y * DeltaTime) {
+		Velocity.Y += Acceleration.Y * DeltaTime;
+	}
+	else if (Velocity.Y >= VelocityTarget.Y + Deceleration.Y * DeltaTime) {
+		Velocity.Y -= Deceleration.Y * DeltaTime;
+	}
+	else {
+		Velocity.Y = VelocityTarget.Y;
+	}
+
+
+	// Calculate destination
 	FVector Location = GetActorLocation();
+	bool bIsTouchingGround = Location.Z <= 0.0f;
+	bool bTouchedGroundThisFrame = false;
 	FVector Destination = Location + FVector(Velocity.X * GetActorForwardVector().X, 0.0f, Velocity.Y);
-	bool bTouchedGround = Destination.Z <= 0.0;
-	if (bTouchedGround) {
+	if (!bIsTouchingGround && Destination.Z <= 0.0) {
+		bTouchedGroundThisFrame = true;
+	}
+	bIsTouchingGround = Destination.Z <= 0.0;
+	if (bIsTouchingGround) {
 		Destination.Z = 0.0;
 		Velocity.Y = 0.0;
 	}
+
+	// Translate
 	SetActorLocation(Destination);
 
-	// Cancel state
-	if (CurrentAttackState) {
-		if (CurrentAttackState->CancelFrame > 0.0f
-			&& CurrentFrame > CurrentAttackState->CancelFrame
-			&& (MovementInput < 0.0f
-				|| MovementInput > 0.0f
-				|| CrouchInput > 0.0f
-				|| JumpInputTime > 0.0f
-				|| EvadeInputTime > 0.0f
-				|| NormalInputTime > 0.0f
-				|| SpecialInputTime > 0.0f))
-		{
-			if (bTouchedGround)
-				if (CrouchInput > 0.0f)
-					CurrentState = GroundCrouching;
-				else
-					CurrentState = GroundNeutral;
-			else
-				CurrentState = AirNeutral;
-		}
-	}
-
 	// Landing
-	if ((CurrentState->bIsAir)
-		&& bTouchedGround
-		&& GroundNeutral)
+	if (bTouchedGroundThisFrame)
 	{
-		EnterState(GroundNeutral, EVelocityType::ADD);
-		return;
+		EnterState(EFighterState::GroundNeutral);
 	}
 	// Attacking (Normal)
-	if (NormalInputTime > 0.0f
-		&& CurrentState->AttackNormal)
+	else if (NormalInputTime > 0.0f)
 	{
 		NormalInputTime = 0.0f;
-		EnterAttackState(CurrentState->AttackNormal, EVelocityType::ADD);
-		return;
+		EnterNormalAttackState(CurrentState);
 	}
 	// Jumping
-	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
-		&& bTouchedGround
-		&& JumpInputTime > 0.0f
-		&& AirNeutral)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
+		&& bIsTouchingGround
+		&& JumpInputTime > 0.0f)
 	{
 		JumpInputTime = 0.0f;
-		EnterState(AirNeutral, EVelocityType::ADD);
-		return;
+		Velocity += { 0.0, InnateAsset->JumpVelocity };
+		EnterState(EFighterState::AirNeutral);
 	}
 	// Crouching (Ground)
-	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
-		&& CrouchInput > 0.0f
-		&& GroundCrouching)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
+		&& CrouchInput > 0.0f)
 	{
-		EnterState(GroundCrouching, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::GroundCrouching);
 	}
 	// Moving (Ground)
-	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
 		&& MovementInput != 0.0f
-		&& CrouchInput == 0.0f
-		&& GroundForward)
+		&& CrouchInput == 0.0f)
 	{
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(GroundForward, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::GroundForward);
 	}
 	// Stopping (Ground)
-	if ((CurrentState == GroundNeutral
-		|| CurrentState == GroundForward
-		|| CurrentState == GroundCrouching)
-		&& MovementInput == 0.0f
-		&& GroundNeutral)
+	else if ((CurrentState == EFighterState::GroundNeutral
+		|| CurrentState == EFighterState::GroundForward
+		|| CurrentState == EFighterState::GroundCrouching)
+		&& MovementInput == 0.0f)
 	{
-		EnterState(GroundNeutral, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::GroundNeutral);
 	}
 	// Crouching (Air)
-	if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward
-		|| CurrentState == AirCrouching)
-		&& CrouchInput> 0.0f
-		&& AirCrouching)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching)
+		&& CrouchInput> 0.0f)
 	{
-		EnterState(AirCrouching, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::AirCrouching);
 	}
 	// Moving (Air)
-	if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward)
 		&& MovementInput != 0.0f
-		&& CrouchInput == 0.0f
-		&& AirForward)
+		&& CrouchInput == 0.0f)
 	{
 		if (MovementInput < 0.0f) {
 			TurnAround();
 		}
-		EnterState(AirForward, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::AirForward);
 	}
 	// Stopping (Air)
-	if ((CurrentState == AirNeutral
-		|| CurrentState == AirForward
-		|| CurrentState == AirCrouching)
-		&& MovementInput == 0.0f
-		&& AirNeutral)
+	else if ((CurrentState == EFighterState::AirNeutral
+		|| CurrentState == EFighterState::AirForward
+		|| CurrentState == EFighterState::AirCrouching)
+		&& MovementInput == 0.0f)
 	{
-		EnterState(AirNeutral, EVelocityType::IGNORE);
-		return;
+		EnterState(EFighterState::AirNeutral);
 	}
 	// Ending
-	if (CurrentAttackState
-		&& CurrentFrame >= CurrentAttackState->StartupFrames + CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames
-		&& CurrentAttackState->End)
+	else if (CurrentAttack
+		&& CurrentFrame >= CurrentAttack->StartupFrames
+			+ CurrentAttack->ActiveFrames
+			+ CurrentAttack->RecoveryFrames)
 	{
-		EnterState(CurrentState->End, EVelocityType::IGNORE);
-		return;
+		EnterState(CurrentAttack->End);
 	}
 }
 
@@ -314,26 +521,6 @@ void AFighterPawn::BeginPoint()
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void AFighterPawn::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapBegin from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-		if (OtherFighter != this)
-			Target = OtherFighter;
-	}
-}
-
-void AFighterPawn::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, "Pawn OverlapEnd from " + OverlappedComp->GetFName().ToString() + " to " + OtherComp->GetFName().ToString());
-	if (OtherComp->GetFName() == TEXT("BodyBox")) {
-		AFighterPawn* OtherFighter = Cast<AFighterPawn>(OtherActor);
-		if (OtherFighter == Target)
-			Target = nullptr;
-	}
 }
 
 bool AFighterPawn::GetIsAttackActive()
@@ -380,14 +567,14 @@ void AFighterPawn::HardCancel()
 
 	Resource--;
 	FVector2D CanceledVelocity = Velocity;
-	UFighterStateAsset* CanceledState = CurrentState;
+	UFighterAttackAsset* CanceledAttack = CurrentAttack;
 
 	ResetToNeutral();
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
 
-	if (CanceledState)
-		OnHardCancel(CanceledState, CanceledVelocity);
+	if (CanceledAttack)
+		OnHardCancel(CanceledAttack, CanceledVelocity);
 }
 
 void AFighterPawn::TurnAround()
@@ -398,11 +585,9 @@ void AFighterPawn::TurnAround()
 
 	if (bIsFacingRight) {
 		SetActorRelativeRotation(FRotator(0.0, 0.0, 0.0));
-		SpringArm->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
 	}
 	else {
 		SetActorRelativeRotation(FRotator(0.0, 180.0, 0.0));
-		SpringArm->SetRelativeRotation(FRotator(0.0, 90.0, 0.0));
 	}
 }
 
@@ -413,10 +598,10 @@ void AFighterPawn::ResetToNeutral()
 
 	Velocity = { 0.0f, 0.0f };
 	if (bTouchingGround) {
-		EnterState(GroundNeutral, EVelocityType::IGNORE, true);
+		EnterState(EFighterState::GroundNeutral);
 	}
 	else {
-		EnterState(AirNeutral, EVelocityType::IGNORE, true);
+		EnterState(EFighterState::AirNeutral);
 	}
 }
 
@@ -453,44 +638,42 @@ bool AFighterPawn::GetIsFacingRight()
 
 UAnimSequence* AFighterPawn::GetAnimationSequence()
 {
-	// Current state is not an attack
-	if (!CurrentState->GetIsAttack()) {
-		return CurrentState->AnimationLoop;
+	if (CurrentState != EFighterState::Attack) {
+		return nullptr;
 	}
+
+	UAnimSequence* AttackAnimation = nullptr;
+
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
-		return CurrentAttackState->AnimationLead;
+	if (CurrentFrame < CurrentAttack->StartupFrames) {
+		AttackAnimation = CurrentAttack->AnimationLead;
 	}
 	// Current attack state is following through
 	else {
-		return CurrentAttackState->AnimationFollow;
+		AttackAnimation = CurrentAttack->AnimationFollow;
 	}
+
+	return AttackAnimation;
 }
 
 float AFighterPawn::GetAnimationPlayRate()
 {
-	// Current state is not an attack
-	if (!CurrentState->GetIsAttack()) {
+	if (CurrentState != EFighterState::Attack) {
 		return 1.0f;
 	}
+
+	float PlayRate = 1.0f;
+
 	// Current attack state is leading in
-	else if (CurrentFrame < CurrentAttackState->StartupFrames) {
-		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Lead-in"));
-		return 60.0f / (float)(CurrentAttackState->StartupFrames);
+	if (CurrentFrame < CurrentAttack->StartupFrames) {
+		PlayRate = 60.0f / (float)(CurrentAttack->StartupFrames);
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, FString::Printf(TEXT("Lead-in: %f"), PlayRate));
 	}
 	// Current attack state is following through
 	else {
-		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, TEXT("Follow-through"));
-		return 60.0f / (float)(CurrentAttackState->ActiveFrames + CurrentAttackState->RecoveryFrames);
+		PlayRate = 60.0f / (float)(CurrentAttack->ActiveFrames + CurrentAttack->RecoveryFrames);
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Green, FString::Printf(TEXT("Follow-through: %f"), PlayRate));
 	}
-}
 
-bool AFighterPawn::GetLoopAnimation()
-{
-	if (!CurrentState->GetIsAttack()) {
-		return CurrentState->bLoopAnimation;
-	}
-	else {
-		return false;
-	}
+	return PlayRate;
 }

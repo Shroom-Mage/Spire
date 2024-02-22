@@ -2,20 +2,20 @@
 
 
 #include "AfterimagePawn.h"
-#include "FighterStateAsset.h"
+#include "FighterState.h"
 
 void AAfterimagePawn::Disappear()
 {
 	SetActorLocation(FVector(0.0, 4000.0, 0.0));
 }
 
-void AAfterimagePawn::EnterState(UFighterStateAsset* State, EVelocityType VelocityType, bool bSplit)
+void AAfterimagePawn::EnterState(EFighterState State)
 {
-	if (!State->GetIsAttack()) {
-		Disappear();
-	}
+	//if (!State->GetIsAttack()) {
+	//	Disappear();
+	//}
 
-	Super::EnterState(State, VelocityType, bSplit);
+	Super::EnterState(State);
 }
 
 void AAfterimagePawn::TakeHit(AFighterPawn* Attacker, float Damage)
