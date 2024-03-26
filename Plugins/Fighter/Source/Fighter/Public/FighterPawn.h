@@ -38,12 +38,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterState")
 	void OnEnterState(EFighterState StateEntered, EFighterState StatedExited);
 
-	// Called to enter a new state. Entering the current state will do nothing.
-	UFUNCTION(BlueprintCallable)
 	virtual void EnterNormalAttackState(EFighterState State);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void EnterNormalAttackState(UFighterAttackAsset* AttackAsset);
+
 	UFUNCTION(BlueprintImplementableEvent, DisplayName="EnterAttackState")
-	void OnEnterNormalAttackState(UFighterAttackAsset* AttackAsset, EFighterState StatedExited);
+	void OnEnterNormalAttackState(UFighterAttackAsset* AttackAsset, EFighterState StatedExited, float TimeExited);
 
 public:	
 	// Called every frame
@@ -107,6 +108,15 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void TakeHit(AFighterPawn* Attacker, float Damage);
+
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentFrame();
+
+	UFUNCTION(BlueprintCallable)
+	EFighterState GetCurrentState();
+
+	UFUNCTION(BlueprintCallable)
+	UFighterAttackAsset* GetCurrentAttack();
 
 	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetSkeletalMeshComponent();

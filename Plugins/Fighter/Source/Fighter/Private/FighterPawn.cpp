@@ -225,7 +225,12 @@ void AFighterPawn::EnterNormalAttackState(EFighterState State)
 		return;
 	}
 
-	OnEnterNormalAttackState(AttackAsset, CurrentState);
+	EnterNormalAttackState(AttackAsset);
+}
+
+void AFighterPawn::EnterNormalAttackState(UFighterAttackAsset* AttackAsset)
+{
+	OnEnterNormalAttackState(AttackAsset, CurrentState, CurrentFrame * 60.0f);
 
 	EnterState(EFighterState::Attack);
 	CurrentAttack = AttackAsset;
@@ -271,11 +276,11 @@ void AFighterPawn::Tick(float DeltaTime)
 		if (CurrentFrame >= CurrentAttack->StartupFrames
 			&& CurrentFrame < CurrentAttack->StartupFrames + CurrentAttack->ActiveFrames
 			&& !bHasAttackHit) {
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				5.0f,
-				FColor::Purple,
-				FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttack->StartupFrames));
+			//GEngine->AddOnScreenDebugMessage(
+			//	-1,
+			//	5.0f,
+			//	FColor::Purple,
+			//	FString::Printf(TEXT("Active Frame: %f"), CurrentFrame - CurrentAttack->StartupFrames));
 			
 			// Get hit location and, if necessary, AttackStartLocation
 			FVector HitLocation = SkeletalMesh->GetSocketLocation(CurrentAttack->SocketName);
@@ -569,12 +574,12 @@ void AFighterPawn::HardCancel()
 	FVector2D CanceledVelocity = Velocity;
 	UFighterAttackAsset* CanceledAttack = CurrentAttack;
 
+	if (CanceledAttack)
+		OnHardCancel(CanceledAttack, CanceledVelocity);
+
 	ResetToNeutral();
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HARD CANCEL!"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Resource: %f"), Resource));
-
-	if (CanceledAttack)
-		OnHardCancel(CanceledAttack, CanceledVelocity);
 }
 
 void AFighterPawn::TurnAround()
@@ -624,6 +629,21 @@ void AFighterPawn::TakeHit(AFighterPawn* Attacker, float Damage)
 	if (GameMode) {
 		GameMode->RegisterHit(Attacker, this);
 	}
+}
+
+float AFighterPawn::GetCurrentFrame()
+{
+	return CurrentFrame;
+}
+
+EFighterState AFighterPawn::GetCurrentState()
+{
+	return CurrentState;
+}
+
+UFighterAttackAsset* AFighterPawn::GetCurrentAttack()
+{
+	return CurrentAttack;
 }
 
 USkeletalMeshComponent* AFighterPawn::GetSkeletalMeshComponent()
