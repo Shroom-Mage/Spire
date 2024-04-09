@@ -6,6 +6,7 @@
 #include "FighterInnateAsset.h"
 #include "FighterState.h"
 #include "FighterAttackAsset.h"
+#include "NiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -112,6 +113,48 @@ AFighterPawn::AFighterPawn()
 	ShinRCapsule->SetCapsuleHalfHeight(0.2f);
 	ShinRCapsule->SetCollisionProfileName(FName("FighterBody"));
 	ShinRCapsule->ShapeColor = FColor(0, 0, 255, 255);
+
+	HipsEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HipsEmitter"));
+	HipsEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("hips"));
+
+	HeadEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HeadEmitter"));
+	HeadEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
+
+	UpperArmLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("UpperArmLEmitter"));
+	UpperArmLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_L"));
+
+	UpperArmREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("UpperArmREmitter"));
+	UpperArmREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("upper_arm_R"));
+
+	ForearmLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ForearmLEmitter"));
+	ForearmLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_L"));
+
+	ForearmREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ForearmREmitter"));
+	ForearmREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("forearm_R"));
+
+	HandLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HandLEmitter"));
+	HandLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("hand_L"));
+
+	HandREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HandREmitter"));
+	HandREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("hand_R"));
+
+	ThighLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ThighLEmitter"));
+	ThighLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_L"));
+
+	ThighREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ThighREmitter"));
+	ThighREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("thigh_R"));
+
+	ShinLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ShinLEmitter"));
+	ShinLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_L"));
+
+	ShinREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ShinREmitter"));
+	ShinREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("shin_R"));
+
+	FootLEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FootLEmitter"));
+	FootLEmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("foot_L"));
+
+	FootREmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FootREmitter"));
+	FootREmitter->AttachToComponent(SkeletalMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("foot_R"));
 }
 
 // Called when the game starts or when spawned
@@ -130,47 +173,20 @@ void AFighterPawn::BeginPlay()
 		return;
 	}
 
-	//// Ground Neutral
-	//GroundNeutral = NewObject<UFighterState>();
-	//GroundNeutral->Animation = InnateGroundNeutralAnimation;
-	//GroundNeutral->Attack = NewObject<UFighterAttackState>();
-	//GroundNeutral->Attack->Asset = InnateGroundNeutralAttack;
-	//if (GroundNeutral->Attack->Asset) GroundNeutral->Attack->End = GroundNeutral;
-
-	//// Ground Forward
-	//GroundForward = NewObject<UFighterState>();
-	//GroundForward->Animation = InnateGroundForwardAnimation;
-	//GroundForward->Attack = NewObject<UFighterAttackState>();
-	//GroundForward->Attack->Asset = InnateGroundForwardAttack;
-	//if (GroundForward->Attack->Asset) GroundForward->Attack->End = GroundForward;
-
-	//// Ground Crouching
-	//GroundCrouching = NewObject<UFighterState>();
-	//GroundCrouching->Animation = InnateGroundCrouchingAnimation;
-	//GroundCrouching->Attack = NewObject<UFighterAttackState>();
-	//GroundCrouching->Attack->Asset = InnateGroundCrouchingAttack;
-	//if (GroundCrouching->Attack->Asset) GroundCrouching->Attack->End = GroundCrouching;
-
-	//// Air Neutral
-	//AirNeutral = NewObject<UFighterState>();
-	//AirNeutral->Animation = InnateAirNeutralAnimation;
-	//AirNeutral->Attack = NewObject<UFighterAttackState>();
-	//AirNeutral->Attack->Asset = InnateAirNeutralAttack;
-	//if (AirNeutral->Attack->Asset) AirNeutral->Attack->End = AirNeutral;
-
-	//// Air Forward
-	//AirForward = NewObject<UFighterState>();
-	//AirForward->Animation = InnateAirForwardAnimation;
-	//AirForward->Attack = NewObject<UFighterAttackState>();
-	//AirForward->Attack->Asset = InnateAirForwardAttack;
-	//if (AirForward->Attack->Asset) AirForward->Attack->End = AirForward;
-
-	//// Air Crouching
-	//AirCrouching = NewObject<UFighterState>();
-	//AirCrouching->Animation = InnateAirCrouchingAnimation;
-	//AirCrouching->Attack = NewObject<UFighterAttackState>();
-	//AirCrouching->Attack->Asset = InnateAirCrouchingAttack;
-	//if (AirCrouching->Attack->Asset) AirCrouching->Attack->End = AirCrouching;
+	HipsEmitter->Deactivate();
+	HeadEmitter->Deactivate();
+	UpperArmLEmitter->Deactivate();
+	UpperArmREmitter->Deactivate();
+	ForearmLEmitter->Deactivate();
+	ForearmREmitter->Deactivate();
+	HandLEmitter->Deactivate();
+	HandREmitter->Deactivate();
+	ThighLEmitter->Deactivate();
+	ThighREmitter->Deactivate();
+	ShinLEmitter->Deactivate();
+	ShinREmitter->Deactivate();
+	FootLEmitter->Deactivate();
+	FootREmitter->Deactivate();
 }
 
 void AFighterPawn::EnterState(EFighterState State)
@@ -290,6 +306,10 @@ void AFighterPawn::Tick(float DeltaTime)
 			// Mark that the attack has begun
 			bIsAttackActive = true;
 
+			// Emit particles
+			HeadEmitter->SetWorldLocation(HitLocation);
+			HeadEmitter->Activate();
+
 			// Check hit
 			FHitResult Hit;
 			bHasAttackHit = UKismetSystemLibrary::SphereTraceSingleByProfile(
@@ -316,8 +336,18 @@ void AFighterPawn::Tick(float DeltaTime)
 				//	Target->TakeHit(this, 1.0f);
 			}
 		}
-		else {
+		else if (bIsAttackActive) {
+			// Mark that the attack has ended
 			bIsAttackActive = false;
+
+			// Stop emitting particles
+			HeadEmitter->Deactivate();
+
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.0f,
+				FColor::Purple,
+				FString::Printf(TEXT("Active Frame End")));
 		}
 	}
 

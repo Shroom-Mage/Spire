@@ -10,6 +10,7 @@ class UCapsuleComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UNiagaraComponent;
 class UFighterInnateAsset;
 class UFighterState;
 class UFighterAttackState;
@@ -157,6 +158,35 @@ private:
 	UCapsuleComponent* ShinLCapsule;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Collision", meta=(AllowPrivateAccess="true"))
 	UCapsuleComponent* ShinRCapsule;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* HipsEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* HeadEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* UpperArmLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* UpperArmREmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ForearmLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ForearmREmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* HandLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* HandREmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ThighLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ThighREmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ShinLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* ShinREmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* FootLEmitter;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
+	UNiagaraComponent* FootREmitter;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation", meta=(AllowPrivateAccess="true"))
 	bool bAnimationNeedsReset;
@@ -200,23 +230,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Core States")
 	UFighterInnateAsset* InnateAsset;
-
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* GroundNeutral;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* GroundForward;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* GroundCrouching;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* AirNeutral;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* AirForward;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* AirCrouching;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* EvadeNeutral;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* EvadeForward;
-	//UPROPERTY(BlueprintReadWrite, Category="Core States")
-	//UFighterState* EvadeCrouching;
 };
