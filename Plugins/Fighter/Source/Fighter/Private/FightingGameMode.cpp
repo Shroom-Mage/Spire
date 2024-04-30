@@ -59,6 +59,11 @@ void AFightingGameMode::BeginPlay()
 	Fighters[0] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	Fighters[1] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 1));
 
+	Fighter0->GetSkeletalMeshComponent()->SetMaterial(0, Fighter0Material);
+	Fighter0->GetSkeletalMeshComponent()->SetMaterial(1, Fighter0Material);
+	Fighter1->GetSkeletalMeshComponent()->SetMaterial(0, Fighter1Material);
+	Fighter1->GetSkeletalMeshComponent()->SetMaterial(1, Fighter1Material);
+
 	BeginMatch();
 	BeginRound();
 	BeginPoint();
