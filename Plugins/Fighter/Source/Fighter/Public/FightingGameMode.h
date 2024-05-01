@@ -66,12 +66,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Match", meta=(AllowPrivateAccess="true"))
 	TArray<double> StartingPositions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fighter Parameters")
-	UMaterialInterface* Fighter0Material;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fighter Parameters")
-	UMaterialInterface* Fighter1Material;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Arcana Parameters")
 	float ResourceMultiplier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fighter Parameters")
+	TArray<UMaterialInterface*> FighterMaterials;
 };

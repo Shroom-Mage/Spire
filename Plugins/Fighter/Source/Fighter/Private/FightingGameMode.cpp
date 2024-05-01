@@ -12,6 +12,7 @@ AFightingGameMode::AFightingGameMode()
 	Fighters = { nullptr, nullptr };
 	Score = { 0, 0 };
 	StartingPositions = { -200.0, 200.0 };
+	FighterMaterials = { nullptr, nullptr };
 }
 
 void AFightingGameMode::RegisterHit(AFighterPawn* Attacker, AFighterPawn* Recipient)
@@ -59,10 +60,10 @@ void AFightingGameMode::BeginPlay()
 	Fighters[0] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	Fighters[1] = Cast<AFighterPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 1));
 
-	Fighter0->GetSkeletalMeshComponent()->SetMaterial(0, Fighter0Material);
-	Fighter0->GetSkeletalMeshComponent()->SetMaterial(1, Fighter0Material);
-	Fighter1->GetSkeletalMeshComponent()->SetMaterial(0, Fighter1Material);
-	Fighter1->GetSkeletalMeshComponent()->SetMaterial(1, Fighter1Material);
+	Fighters[0]->GetSkeletalMeshComponent()->SetMaterial(0, FighterMaterials[0]);
+	Fighters[0]->GetSkeletalMeshComponent()->SetMaterial(1, FighterMaterials[0]);
+	Fighters[1]->GetSkeletalMeshComponent()->SetMaterial(0, FighterMaterials[1]);
+	Fighters[1]->GetSkeletalMeshComponent()->SetMaterial(1, FighterMaterials[1]);
 
 	BeginMatch();
 	BeginRound();
